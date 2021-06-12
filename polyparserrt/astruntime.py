@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from .kolasuast import Point, Position, ASTNode, ReferenceByName
 
+
 @dataclass
 class Issue:
     pass
