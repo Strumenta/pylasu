@@ -1,4 +1,4 @@
-name: SMART Photonics Recipe Generator
+name: Build, lint and test
 
 on: [push]
 
