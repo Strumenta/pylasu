@@ -55,5 +55,3 @@ class Node(Origin):
     @property
     def source_text(self) -> str or None:
         return self.origin.source_text
-
-
