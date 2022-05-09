@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
-from .kolasuast import Point, Position, ASTNode, ReferenceByName
+from .kolasuast import ReferenceByName
+from .model import Node
+from .model.position import Point, Position
 
 
 @dataclass
@@ -11,7 +13,7 @@ class Issue:
 @dataclass
 class ParsingResult:
     errors: [Issue]
-    root: ASTNode
+    root: Node
 
 
 def unserialize_result(json, root_unserializer) -> ParsingResult:

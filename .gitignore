@@ -1,5 +1,8 @@
 .idea
+bin/
+lib/
 venv
 build
 dist
+pyvenv.cfg
 *.egg-info

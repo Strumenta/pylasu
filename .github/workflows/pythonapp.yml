@@ -1,0 +1,35 @@
+name: SMART Photonics Recipe Generator
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Setup Java 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 11
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          curl -O https://www.antlr.org/download/antlr-4.10.1-complete.jar
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --show-source --statistics
+          flake8 tests --config tests/.flake8 --count --show-source --statistics
+      - name: Test with pytest
+        run: |
+          pip install pytest pytest-cov
+          pytest --cov=recipes --cov-fail-under=90 tests

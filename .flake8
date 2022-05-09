@@ -1,2 +1,4 @@
 [flake8]
-max-line-length = 160
+exclude = .git,__pycache__,bin,lib,tests
+max-complexity = 10
+max-line-length = 120
