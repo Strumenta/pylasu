@@ -32,4 +32,4 @@ jobs:
       - name: Test with pytest
         run: |
           pip install pytest pytest-cov
-          pytest --cov=recipes --cov-fail-under=90 tests
+          pytest --cov=pylasu --cov-fail-under=50 tests
