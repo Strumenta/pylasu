@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, InitVar
+import inspect
 
 from .position import Position
 
@@ -55,3 +56,7 @@ class Node(Origin):
     @property
     def source_text(self) -> str or None:
         return self.origin.source_text
+
+    @property
+    def properties(self):
+        return (name for name in dir(self) if not name.startswith('__') and name != 'properties')
