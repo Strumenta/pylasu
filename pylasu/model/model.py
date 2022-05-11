@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, InitVar
-import inspect
+import ast
 
 from .position import Position
 
@@ -31,7 +31,7 @@ class JustPosition(Origin):
 
 
 @dataclass
-class Node(Origin):
+class Node(Origin, ast.AST):
     origin: Origin = None
     specified_position: InitVar[Position] = None
 
@@ -60,3 +60,11 @@ class Node(Origin):
     @property
     def properties(self):
         return (name for name in dir(self) if not name.startswith('__') and name != 'properties')
+
+    @property
+    def _fields(self):
+        return self.properties
+
+    @property
+    def node_type(self):
+        return type(self)
