@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 setup(
-    name='polyparserrt',
-    packages=find_packages(include=["polyparserrt"]),
+    name='pylasu',
+    packages=find_packages(include=["pylasu"]),
     version='0.1.0',
     description='Polyparser Runtime',
     author='Strumenta S.R.L.',
