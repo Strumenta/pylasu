@@ -35,3 +35,7 @@ class ModelTest(unittest.TestCase):
             next(n for n in node.properties if n == '__private__')
         with self.assertRaises(StopIteration):
             next(n for n in node.properties if n == 'non_existent')
+        with self.assertRaises(StopIteration):
+            next(n for n in node.properties if n == 'properties')
+        with self.assertRaises(StopIteration):
+            next(n for n in node.properties if n == "origin")
