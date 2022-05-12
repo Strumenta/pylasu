@@ -24,6 +24,26 @@ class Point:
         else:
             raise NotImplementedError()
 
+    def __add__(self, other):
+        if isinstance(other, str):
+            if len(other) == 0:
+                return self
+            line = self.line
+            column = self.column
+            i = 0
+            while i < len(other):
+                if other[i] == '\n' or other[i] == '\r':
+                    line += 1
+                    column = 0
+                    if other[i] == '\r' and i < len(other) - 1 and other[i + 1] == '\n':
+                        i += 1  # Count the \r\n sequence as 1 line
+                else:
+                    column += 1
+                i += 1
+            return Point(line, column)
+        else:
+            raise NotImplementedError()
+
 
 @dataclass
 class Position:

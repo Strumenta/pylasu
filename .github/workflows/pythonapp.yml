@@ -34,6 +34,9 @@ jobs:
           # stop the build if there are Python syntax errors or undefined names
           flake8 . --count --show-source --statistics
           flake8 tests --config tests/.flake8 --count --show-source --statistics
+      - name: Generate parser
+        run: java -cp ../antlr-4.10.1-complete.jar org.antlr.v4.Tool -Dlanguage=Python3 -visitor -o simple_lang SimpleLangLexer.g4 SimpleLangParser.g4
+        working-directory: tests
       - name: Test with pytest
         run: |
           pip install pytest pytest-cov

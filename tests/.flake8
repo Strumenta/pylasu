@@ -5,4 +5,4 @@ ignore = F841, W503
 # F841 = Variable assigned but not used. In tests, it's useful to keep those for debugging.
 # W503 = Line break before binary operator – we have to choose between W503 and W504 as they're incompatible. W504 is
 # compliant with the more recent PEP8.
-exclude = data/sample-config.py
+exclude = simple_lang/*
