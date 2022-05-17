@@ -40,6 +40,8 @@ class JustPosition(Origin):
 class Node(Origin, ast.AST):
     origin: Optional[Origin] = None
     _origin: Origin = field(init=False, repr=False, default=None)
+    parent: Optional["Node"] = None
+    _parent: "Node" = field(init=False, repr=False, default=None)
     specified_position: InitVar[Position] = None
 
     def __post_init__(self, specified_position: Position):
@@ -58,6 +60,18 @@ class Node(Origin, ast.AST):
     @origin.setter
     def origin(self, origin: Origin):
         self._origin = origin
+
+    @internal_property
+    def parent(self) -> "Node":
+        return self._parent
+
+    @parent.setter
+    def parent(self, parent: "Node"):
+        self._parent = parent
+
+    def with_parent(self, parent: "Node"):
+        self.parent = parent
+        return self
 
     @internal_property
     def position(self) -> Position:
