@@ -36,5 +36,7 @@ def to_position(self: ParserRuleContext):
 
 
 @extension_method(TerminalNode)
-def to_position(self: TerminalNode):  # noqa: F811 (redefinition of unused function). It's an extension method.
+def to_position(self: TerminalNode):  # noqa: F811
     return Position(self.symbol.start_point, self.symbol.end_point)
+    # We ignore F811 (redefinition of unused function) because this is an extension method and needs to be called
+    # to_position. It's not an actual redefinition.
