@@ -29,13 +29,13 @@ class ModelTest(unittest.TestCase):
 
     def test_node_properties(self):
         node = SomeNode(specified_position=Position(Point(1, 0), Point(2, 1)))
-        self.assertIsNotNone(next(n for n in node.properties if n == 'foo'))
-        self.assertIsNotNone(next(n for n in node.properties if n == 'bar'))
+        self.assertIsNotNone(next(n for n, _ in node.properties if n == 'foo'))
+        self.assertIsNotNone(next(n for n, _ in node.properties if n == 'bar'))
         with self.assertRaises(StopIteration):
-            next(n for n in node.properties if n == '__private__')
+            next(n for n, _ in node.properties if n == '__private__')
         with self.assertRaises(StopIteration):
-            next(n for n in node.properties if n == 'non_existent')
+            next(n for n, _ in node.properties if n == 'non_existent')
         with self.assertRaises(StopIteration):
-            next(n for n in node.properties if n == 'properties')
+            next(n for n, _ in node.properties if n == 'properties')
         with self.assertRaises(StopIteration):
-            next(n for n in node.properties if n == "origin")
+            next(n for n, _ in node.properties if n == "origin")

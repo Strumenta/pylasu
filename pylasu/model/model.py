@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, InitVar
-from typing import Optional
+from typing import Optional, Callable
 import ast
 import inspect
 
@@ -34,6 +34,10 @@ class JustPosition(Origin):
     @position.setter
     def position(self, position: Position):
         self._position = position
+
+
+def is_internal_property_or_method(value):
+    return isinstance(value, internal_property) or isinstance(value, Callable)
 
 
 @dataclass
@@ -84,21 +88,20 @@ class Node(Origin, ast.AST):
         else:
             raise Exception("Origin already set, cannot change position")
 
-    @property
+    @internal_property
     def source_text(self) -> str or None:
         return self.origin.source_text
 
     @internal_property
     def properties(self):
-        return (name for name in dir(self)
-                if not name.startswith('__')
-                and name not in [n for n, v in inspect.getmembers(type(self),
-                                                                  lambda v: isinstance(v, internal_property))])
+        return ((name, getattr(self, name)) for name in dir(self)
+                if not name.startswith('_')
+                and name not in [n for n, v in inspect.getmembers(type(self), is_internal_property_or_method)])
 
-    @property
+    @internal_property
     def _fields(self):
-        return self.properties
+        yield from (name for name, _ in self.properties)
 
-    @property
+    @internal_property
     def node_type(self):
         return type(self)

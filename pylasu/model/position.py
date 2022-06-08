@@ -53,3 +53,8 @@ class Position:
     def __post_init__(self):
         if self.end < self.start:
             raise Exception("End point can't be before starting point")
+
+
+def pos(start_line: int, start_col: int, end_line: int, end_col: int):
+    """Utility function to create a Position"""
+    return Position(Point(start_line, start_col), Point(end_line, end_col))

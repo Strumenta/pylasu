@@ -3,6 +3,7 @@ from antlr4 import ParserRuleContext, TerminalNode, Token
 from antlr4.tree.Tree import ParseTree
 
 from pylasu.model import Origin, Position, Point
+from pylasu.support import extension_method
 
 
 @dataclass
@@ -28,5 +29,12 @@ def token_end_point(token: Token):
 Token.start_point = property(token_start_point)
 Token.end_point = property(token_end_point)
 
-ParserRuleContext.to_position = lambda self: Position(self.start.start_point, self.stop.end_point)
-TerminalNode.to_position = lambda self: Position(self.symbol.start_point, self.symbol.end_point)
+
+@extension_method(ParserRuleContext)
+def to_position(self: ParserRuleContext):
+    return Position(self.start.start_point, self.stop.end_point)
+
+
+@extension_method(TerminalNode)
+def to_position(self: TerminalNode):
+    return Position(self.symbol.start_point, self.symbol.end_point)
