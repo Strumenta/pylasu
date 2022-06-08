@@ -3,3 +3,8 @@ exclude = .git,__pycache__,bin,lib,tests
 max-complexity = 10
 max-line-length = 120
 per-file-ignores = __init__.py:F401
+ignore = F811, W503
+# F811 = Redefinition of unused function. It doesn't recognize functions that are extension methods with the same name
+# in different classes.
+# W503 = Line break before binary operator. We have to choose between W503 and W504 as they're incompatible. W504 is
+# compliant with the more recent PEP8.
