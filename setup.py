@@ -1,9 +1,9 @@
 from setuptools import find_packages, setup
 setup(
     name='pylasu',
-    packages=find_packages(include=["pylasu"]),
+    packages=find_packages(exclude=["tests"]),
     version='0.1.0',
-    description='Polyparser Runtime',
+    description='Pylasu',
     author='Strumenta S.R.L.',
     license='Apache License V2',
     install_requires=[],
