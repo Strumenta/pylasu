@@ -39,4 +39,9 @@ def to_position(self: ParserRuleContext):
 
 @extension_method(TerminalNode)
 def to_position(self: TerminalNode):
-    return Position(self.symbol.start_point, self.symbol.end_point)
+    return self.symbol.to_position()
+
+
+@extension_method(Token)
+def to_position(self: Token):
+    return Position(self.start_point, self.end_point)

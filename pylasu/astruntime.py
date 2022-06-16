@@ -1,26 +1,13 @@
-from dataclasses import dataclass
-
 from .kolasuast import ReferenceByName
-from .model import Node
 from .model.position import Point, Position
+from .validation.validation import Result
 
 
-@dataclass
-class Issue:
-    pass
-
-
-@dataclass
-class ParsingResult:
-    errors: [Issue]
-    root: Node
-
-
-def unserialize_result(json, root_unserializer) -> ParsingResult:
+def unserialize_result(json, root_unserializer) -> Result:
     errors = []
     for json_error in json["errors"]:
         raise Exception()
-    return ParsingResult(errors=errors, root=root_unserializer(json["root"]))
+    return Result(root_unserializer(json["root"]), errors)
 
 
 def check_type(json, expected_type):
