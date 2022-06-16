@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from typing import Optional
+
 from antlr4 import ParserRuleContext, TerminalNode, Token
 from antlr4.tree.Tree import ParseTree
 
@@ -11,7 +13,7 @@ class ParseTreeOrigin(Origin):
     parse_tree: ParseTree
 
     @property
-    def position(self) -> Position or None:
+    def position(self) -> Optional[Position]:
         return self.parse_tree.to_position()
 
 

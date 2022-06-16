@@ -14,26 +14,12 @@ class internal_property(property):
 class Origin(ABC):
     @property
     @abstractmethod
-    def position(self) -> Position or None:
+    def position(self) -> Optional[Position]:
         pass
 
     @property
-    def source_text(self) -> str or None:
+    def source_text(self) -> Optional[str]:
         return None
-
-
-@dataclass
-class JustPosition(Origin):
-    position: Position
-    _position: Position = field(init=False, repr=False)
-
-    @property
-    def position(self) -> Position:
-        return self._position
-
-    @position.setter
-    def position(self, position: Position):
-        self._position = position
 
 
 def is_internal_property_or_method(value):
@@ -43,22 +29,17 @@ def is_internal_property_or_method(value):
 @dataclass
 class Node(Origin, ast.AST):
     origin: Optional[Origin] = None
-    _origin: Origin = field(init=False, repr=False, default=None)
     parent: Optional["Node"] = None
-    _parent: "Node" = field(init=False, repr=False, default=None)
-    specified_position: InitVar[Position] = None
+    position: Optional[Position] = None
 
-    def __post_init__(self, specified_position: Position):
+    def __post_init__(self):
         if isinstance(self.origin, property):
             self.origin = None
-        if specified_position is not None:
-            if self.origin is not None:
-                raise Exception("Cannot provide an explicit position when the origin is also specified")
-            else:
-                self.origin = JustPosition(specified_position)
+        if isinstance(self.parent, property):
+            self.parent = None
 
     @internal_property
-    def origin(self) -> Origin:
+    def origin(self) -> Optional[Origin]:
         return self._origin
 
     @origin.setter
@@ -66,7 +47,7 @@ class Node(Origin, ast.AST):
         self._origin = origin
 
     @internal_property
-    def parent(self) -> "Node":
+    def parent(self) -> Optional["Node"]:
         return self._parent
 
     @parent.setter
@@ -79,14 +60,11 @@ class Node(Origin, ast.AST):
 
     @internal_property
     def position(self) -> Position:
-        return self.origin.position
+        return self._position if self._position is not None else self.origin.position
 
     @position.setter
     def position(self, position: Position):
-        if self.origin is None or isinstance(self.origin, JustPosition):
-            self.origin = JustPosition(position)
-        else:
-            raise Exception("Origin already set, cannot change position")
+        self._position = position
 
     @internal_property
     def source_text(self) -> str or None:

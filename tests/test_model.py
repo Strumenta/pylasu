@@ -9,8 +9,8 @@ class SomeNode(Node):
     foo = 3
     __private__ = 4
 
-    def __post_init__(self, specified_position: Position):
-        super(SomeNode, self).__post_init__(specified_position)
+    def __post_init__(self):
+        super(SomeNode, self).__post_init__()
         self.bar = 5
 
 
@@ -20,15 +20,13 @@ class ModelTest(unittest.TestCase):
         self.assertIsNone(node.origin)
 
     def test_node_with_position(self):
-        node = Node(specified_position=Position(Point(1, 0), Point(2, 1)))
-        self.assertIsNotNone(node.origin)
+        node = Node(position=Position(Point(1, 0), Point(2, 1)))
         self.assertEqual(Position(Point(1, 0), Point(2, 1)), node.position)
-        node = SomeNode(specified_position=Position(Point(1, 0), Point(2, 1)))
-        self.assertIsNotNone(node.origin)
+        node = SomeNode(position=Position(Point(1, 0), Point(2, 1)))
         self.assertEqual(Position(Point(1, 0), Point(2, 1)), node.position)
 
     def test_node_properties(self):
-        node = SomeNode(specified_position=Position(Point(1, 0), Point(2, 1)))
+        node = SomeNode(position=Position(Point(1, 0), Point(2, 1)))
         self.assertIsNotNone(next(n for n, _ in node.properties if n == 'foo'))
         self.assertIsNotNone(next(n for n, _ in node.properties if n == 'bar'))
         with self.assertRaises(StopIteration):
