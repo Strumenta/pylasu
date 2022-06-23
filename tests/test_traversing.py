@@ -25,3 +25,13 @@ class TraversingTest(unittest.TestCase):
     def test_walk_leaves_first(self):
         self.assertEqual(["1", "first", "2", "3", "4", "5", "small", "big", "6", "root"],
                          [n.name for n in box.walk_leaves_first()])
+
+    def test_walk_descendants(self):
+        self.assertEqual(["first", "1", "2", "big", "small", "3", "4", "5", "6"],
+                         [n.name for n in box.walk_descendants()])
+
+    def test_walk_ancestors(self):
+        box.assign_parents()
+        item4 = box.contents[2].contents[0].contents[1]
+        self.assertEqual(["small", "big", "root"],
+                         [n.name for n in item4.walk_ancestors()])
