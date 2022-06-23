@@ -54,6 +54,9 @@ class Position:
         if self.end < self.start:
             raise Exception("End point can't be before starting point")
 
+    def __contains__(self, pos):
+        return isinstance(pos, Position) and self.start <= pos.start and self.end >= pos.end
+
 
 def pos(start_line: int, start_col: int, end_line: int, end_col: int):
     """Utility function to create a Position"""
