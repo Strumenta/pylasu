@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional, Callable
 
-from .position import Position
+from .position import Position, Source
 
 
 class internal_property(property):
@@ -20,6 +20,10 @@ class Origin(ABC):
     @property
     def source_text(self) -> Optional[str]:
         return None
+
+    @property
+    def source(self) -> Optional[Source]:
+        return self.position.source if self.position is not None else None
 
 
 def is_internal_property_or_method(value):
@@ -60,15 +64,20 @@ class Node(Origin, ast.AST):
 
     @internal_property
     def position(self) -> Position:
-        return self._position if self._position is not None else self.origin.position
+        return self._position if self._position is not None\
+            else self.origin.position if self.origin is not None else None
 
     @position.setter
     def position(self, position: Position):
         self._position = position
 
     @internal_property
-    def source_text(self) -> str or None:
-        return self.origin.source_text
+    def source_text(self) -> Optional[str]:
+        return self.origin.source_text if self.origin is not None else None
+
+    @internal_property
+    def source(self) -> Optional[Source]:
+        return self.origin.source if self.origin is not None else None
 
     @internal_property
     def properties(self):
