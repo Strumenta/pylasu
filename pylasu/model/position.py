@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
@@ -44,11 +45,53 @@ class Point:
         else:
             raise NotImplementedError()
 
+    def __str__(self):
+        return f"Line {self.line}, Column {self.column}"
+
+
+class Source:
+    pass
+
+
+@dataclass
+class SourceSet:
+    name: str
+    root: Path
+
+
+@dataclass
+class SourceSetElement(Source):
+    sourceSet: SourceSet
+    relativePath: Path
+
+
+@dataclass
+class FileSource(Source):
+    file: Path
+
+
+@dataclass
+class StringSource(Source):
+    code: str = None
+
+
+@dataclass
+class URLSource(Source):
+    url: str = None
+
 
 @dataclass
 class Position:
+    """An area in a source file, from start to end.
+    The start point is the point right before the starting character.
+    The end point is the point right after the last character.
+    An empty position will have coinciding points.
+
+    Consider a file with one line, containing the text "HELLO".
+    The Position of such text will be Position(Point(1, 0), Point(1, 5))."""
     start: Point
     end: Point
+    source: Source = None
 
     def __post_init__(self):
         if self.end < self.start:
@@ -57,7 +100,11 @@ class Position:
     def __contains__(self, pos):
         return isinstance(pos, Position) and self.start <= pos.start and self.end >= pos.end
 
+    def __str__(self):
+        return f"Position(start={self.start}, end={self.end}"\
+               + (f", source={self.source}" if self.source is not None else "")
 
-def pos(start_line: int, start_col: int, end_line: int, end_col: int):
+
+def pos(start_line: int, start_col: int, end_line: int, end_col: int, source: Source = None):
     """Utility function to create a Position"""
-    return Position(Point(start_line, start_col), Point(end_line, end_col))
+    return Position(Point(start_line, start_col), Point(end_line, end_col), source)
