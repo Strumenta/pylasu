@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/Strumenta/pylasu/actions/workflows/pythonapp.yml/badge.svg)](https://github.com/Strumenta/pylasu/actions/workflows/pythonapp.yml)
 
-Pylasu is an AST Library in the StarLasu family.
+Pylasu is an AST Library in the [StarLasu](https://github.com/Strumenta/StarLasu) family, targeting the Python language.
 
 ## Linting
 
