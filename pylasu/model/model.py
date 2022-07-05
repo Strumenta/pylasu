@@ -12,16 +12,16 @@ class internal_property(property):
 
 
 class Origin(ABC):
-    @property
+    @internal_property
     @abstractmethod
     def position(self) -> Optional[Position]:
         pass
 
-    @property
+    @internal_property
     def source_text(self) -> Optional[str]:
         return None
 
-    @property
+    @internal_property
     def source(self) -> Optional[Source]:
         return self.position.source if self.position is not None else None
 
