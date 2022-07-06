@@ -2,29 +2,14 @@ from dataclasses import dataclass
 from typing import Sequence
 
 from pylasu.model import Node
-from pylasu.model.model import internal_property
+from pylasu.model.model import internal_properties
 
 
 @dataclass
+@internal_properties("syntax_before", "syntax_after")
 class NodeWithSyntax(Node):
     syntax_before: str = ""
     syntax_after: str = ""
-
-    @internal_property
-    def syntax_before(self) -> str:
-        return self._syntax_before
-
-    @syntax_before.setter
-    def syntax_before(self, syntax: str):
-        self._syntax_before = syntax
-
-    @internal_property
-    def syntax_after(self) -> str:
-        return self._syntax_after
-
-    @syntax_after.setter
-    def syntax_after(self, syntax: str):
-        self._syntax_after = syntax
 
     def __post_init__(self):
         if isinstance(self.syntax_before, property):

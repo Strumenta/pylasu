@@ -11,6 +11,13 @@ class internal_property(property):
     pass
 
 
+def internal_properties(*props: str):
+    def decorate(cls: type):
+        cls.__internal_properties__ = [*Node.__internal_properties__, *props]
+        return cls
+    return decorate
+
+
 class Origin(ABC):
     @internal_property
     @abstractmethod
@@ -35,28 +42,7 @@ class Node(Origin, ast.AST):
     origin: Optional[Origin] = None
     parent: Optional["Node"] = None
     position: Optional[Position] = None
-
-    def __post_init__(self):
-        if isinstance(self.origin, property):
-            self.origin = None
-        if isinstance(self.parent, property):
-            self.parent = None
-
-    @internal_property
-    def origin(self) -> Optional[Origin]:
-        return self._origin
-
-    @origin.setter
-    def origin(self, origin: Origin):
-        self._origin = origin
-
-    @internal_property
-    def parent(self) -> Optional["Node"]:
-        return self._parent
-
-    @parent.setter
-    def parent(self, parent: "Node"):
-        self._parent = parent
+    __internal_properties__ = ["origin", "parent", "position"]
 
     def with_parent(self, parent: "Node"):
         self.parent = parent
@@ -83,6 +69,7 @@ class Node(Origin, ast.AST):
     def properties(self):
         return ((name, getattr(self, name)) for name in dir(self)
                 if not name.startswith('_')
+                and name not in self.__internal_properties__
                 and name not in [n for n, v in inspect.getmembers(type(self), is_internal_property_or_method)])
 
     @internal_property

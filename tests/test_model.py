@@ -10,7 +10,6 @@ class SomeNode(Node):
     __private__ = 4
 
     def __post_init__(self):
-        super(SomeNode, self).__post_init__()
         self.bar = 5
 
 
