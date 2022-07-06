@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Sequence
 
 from pylasu.model import Node
+from pylasu.model.model import internal_property
 
 
 @dataclass
@@ -9,9 +10,25 @@ class NodeWithSyntax(Node):
     syntax_before: str = ""
     syntax_after: str = ""
 
+    @internal_property
+    def syntax_before(self) -> str:
+        return self._syntax_before
+
+    @syntax_before.setter
+    def syntax_before(self, syntax: str):
+        self._syntax_before = syntax
+
+    @internal_property
+    def syntax_after(self) -> str:
+        return self._syntax_after
+
+    @syntax_after.setter
+    def syntax_after(self, syntax: str):
+        self._syntax_after = syntax
+
     def as_syntax(self):
         for _, child in self.properties:
-            if isinstance(child, Sequence):
+            if isinstance(child, Sequence) and not isinstance(child, str):
                 for x in child:
                     yield x
             elif child is not None:
