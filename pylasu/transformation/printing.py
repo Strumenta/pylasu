@@ -26,6 +26,12 @@ class NodeWithSyntax(Node):
     def syntax_after(self, syntax: str):
         self._syntax_after = syntax
 
+    def __post_init__(self):
+        if isinstance(self.syntax_before, property):
+            self.syntax_before = ""
+        if isinstance(self.syntax_after, property):
+            self.syntax_after = ""
+
     def as_syntax(self):
         for _, child in self.properties:
             if isinstance(child, Sequence) and not isinstance(child, str):
