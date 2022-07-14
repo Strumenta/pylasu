@@ -18,28 +18,24 @@ class ModelTest(unittest.TestCase):
 
     def test_reference_by_name_unsolved_str(self):
         ref_unsolved = ReferenceByName[SomeNode]("foo")
-        self.assertEquals("Ref(foo)[Unsolved]", ref_unsolved.__str__())
+        self.assertEqual("Ref(foo)[Unsolved]", ref_unsolved.__str__())
 
     def test_reference_by_name_solved_str(self):
         ref_solved = ReferenceByName[SomeNode]("foo", SomeNode(name="foo"))
-        self.assertEquals("Ref(foo)[Solved]", ref_solved.__str__())
+        self.assertEqual("Ref(foo)[Solved]", ref_solved.__str__())
 
-    # try_to_resolve_positive_case_same_case
     def test_try_to_resolve_positive_case_same_case(self):
         ref = ReferenceByName[SomeNode]("foo")
         self.assertTrue(ref.try_to_resolve(candidates=[SomeNode(name="foo")]))
 
-    # try_to_resolve_negative_case_same_case
     def test_try_to_resolve_negative_case_same_case(self):
         ref = ReferenceByName[SomeNode]("foo")
         self.assertFalse(ref.try_to_resolve(candidates=[SomeNode(name="not_foo")]))
 
-    # try_to_resolve_positive_case_different_case
     def test_try_to_resolve_positive_case_different_case(self):
         ref = ReferenceByName[SomeNode]("foo")
         self.assertTrue(ref.try_to_resolve(candidates=[SomeNode(name="Foo")], case_insensitive=True))
 
-    # try_to_resolve_negative_case_different_case
     def test_try_to_resolve_negative_case_different_case(self):
         ref = ReferenceByName[SomeNode]("foo")
         self.assertFalse(ref.try_to_resolve(candidates=[SomeNode(name="Foo")]))
