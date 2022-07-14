@@ -39,8 +39,8 @@ class ReferenceByName(Generic[T]):
         """
 
         def check_name(candidate: T) -> bool:
-            return candidate.name is not None and candidate.name == self.name if not case_insensitive \
-                else candidate.name.lower() == self.name.lower()
+            return candidate.name is not None and (
+                candidate.name == self.name if not case_insensitive else candidate.name.lower() == self.name.lower())
 
         self.referred = next((candidate for candidate in candidates if check_name(candidate)), None)
         return self.resolved()
