@@ -18,11 +18,11 @@ class ModelTest(unittest.TestCase):
 
     def test_reference_by_name_unsolved_str(self):
         ref_unsolved = ReferenceByName[SomeNode]("foo")
-        self.assertEqual("Ref(foo)[Unsolved]", ref_unsolved.__str__())
+        self.assertEqual("Ref(foo)[Unsolved]", str(ref_unsolved))
 
     def test_reference_by_name_solved_str(self):
         ref_solved = ReferenceByName[SomeNode]("foo", SomeNode(name="foo"))
-        self.assertEqual("Ref(foo)[Solved]", ref_solved.__str__())
+        self.assertEqual("Ref(foo)[Solved]", str(ref_solved))
 
     def test_try_to_resolve_positive_case_same_case(self):
         ref = ReferenceByName[SomeNode]("foo")
