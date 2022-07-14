@@ -1,4 +1,4 @@
-from .kolasuast import ReferenceByName
+from .model.naming import ReferenceByName
 from .model.position import Point, Position
 from .validation.validation import Result
 
@@ -26,7 +26,7 @@ def unserialize_position(json):
 
 
 def unserialize_reference_by_name(json):
-    return ReferenceByName(json["name"])
+    return ReferenceByName(name=json["name"])
 
 
 def unserialize_long(json):
