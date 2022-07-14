@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
-from typing import TypeVar, Generic, Optional, List, overload
-from pylasu.support import extension_method
+from typing import TypeVar, Generic, Optional, List
 
 
 @dataclass
@@ -35,13 +34,13 @@ class ReferenceByName(Generic[T]):
 
     def try_to_resolve(self, candidates: List[T], case_insensitive: bool = False) -> bool:
         """
-            Try to resolve the reference by finding a named element with a matching name.
-            The name match is performed in a case sensitive or insensitive way depending on the value of caseInsensitive.
+        Try to resolve the reference by finding a named element with a matching name.
+        The name match is performed in a case sensitive or insensitive way depending on the value of caseInsensitive.
         """
 
         def check_name(candidate: T) -> bool:
-            return candidate.name is not None \
-                   and candidate.name == self.name if not case_insensitive else candidate.name.lower() == self.name.lower()
+            return candidate.name is not None and candidate.name == self.name if not case_insensitive \
+                else candidate.name.lower() == self.name.lower()
 
         self.referred = next((candidate for candidate in candidates if check_name(candidate)), None)
         return self.resolved()
