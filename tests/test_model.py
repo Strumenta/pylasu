@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import dataclasses
 import unittest
 
 from pylasu.model import Node, Position, Point
-from pylasu.model.naming import ReferenceByName, Named
+from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
 
 
 @dataclasses.dataclass
@@ -23,6 +25,10 @@ class ModelTest(unittest.TestCase):
     def test_reference_by_name_solved_str(self):
         ref_solved = ReferenceByName[SomeNode]("foo", SomeNode(name="foo"))
         self.assertEqual("Ref(foo)[Solved]", str(ref_solved))
+
+    def test_scope_lookup_symbol_in_empty_scope(self):
+        scope: Scope = Scope()
+        self.assertIsNone(scope.lookup("foo"))
 
     def test_try_to_resolve_positive_case_same_case(self):
         ref = ReferenceByName[SomeNode]("foo")
@@ -63,3 +69,26 @@ class ModelTest(unittest.TestCase):
             next(n for n, _ in node.properties if n == 'properties')
         with self.assertRaises(StopIteration):
             next(n for n, _ in node.properties if n == "origin")
+
+    def test_scope_lookup_symbol_in_current_scope(self):
+        symbol: Symbol = Symbol(name="foo")
+        scope: Scope = Scope(symbols={"foo": symbol}, parent=None)
+        self.assertEquals(symbol, scope.lookup("foo"))
+
+    def test_scope_lookup_symbol_in_current_scope_with_shadowing(self):
+        symbol: Symbol = Symbol(name="foo")
+        shadow: Symbol = Symbol(name="foo")
+        scope: Scope = Scope(symbols={"foo": symbol}, parent=Scope(symbols={"foo": shadow}, parent=None))
+        self.assertEquals(symbol, scope.lookup("foo"))
+
+    def test_scope_lookup_symbol_in_parent_scope(self):
+        symbol: Symbol = Symbol(name="foo")
+        scope: Scope = Scope(symbols={}, parent=Scope(symbols={"foo": symbol}, parent=None))
+        self.assertEquals(symbol, scope.lookup("foo"))
+
+    def test_scope_lookup_symbol_in_parent_scope_with_shadowing(self):
+        symbol: Symbol = Symbol(name="foo")
+        shadow: Symbol = Symbol(name="foo")
+        scope: Scope = Scope(symbols={},
+                             parent=Scope(symbols={"foo": symbol}, parent=Scope(symbols={"foo": shadow}, parent=None)))
+        self.assertEquals(symbol, scope.lookup("foo"))
