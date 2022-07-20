@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import TypeVar, Generic, Optional, List
+from typing import TypeVar, Generic, Optional, List, Dict
 
 
 @dataclass
@@ -32,6 +32,10 @@ class ReferenceByName(Generic[T]):
     def resolved(self):
         return self.referred is not None
 
+    def resolve(self, scope: 'Scope') -> bool:
+        self.referred = scope.lookup(symbol_name=self.name)
+        return self.resolved()
+
     def try_to_resolve(self, candidates: List[T], case_insensitive: bool = False) -> bool:
         """
         Try to resolve the reference by finding a named element with a matching name.
@@ -44,3 +48,17 @@ class ReferenceByName(Generic[T]):
 
         self.referred = next((candidate for candidate in candidates if check_name(candidate)), None)
         return self.resolved()
+
+
+@dataclass
+class Symbol(Named):
+    pass
+
+
+@dataclass
+class Scope:
+    symbols: Dict[str, Symbol] = field(default_factory=dict)
+    parent: Optional['Scope'] = field(default=None)
+
+    def lookup(self, symbol_name: str) -> Symbol or None:
+        return self.symbols.get(symbol_name, self.parent.lookup(symbol_name) if self.parent else None)
