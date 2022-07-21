@@ -34,10 +34,6 @@ class ModelTest(unittest.TestCase):
         ref_solved = ReferenceByName[SomeNode]("foo", SomeNode(name="foo"))
         self.assertEqual("Ref(foo)[Solved]", str(ref_solved))
 
-    def test_scope_lookup_symbol_in_empty_scope(self):
-        scope: Scope = Scope()
-        self.assertIsNone(scope.lookup("foo"))
-
     def test_try_to_resolve_positive_case_same_case(self):
         ref = ReferenceByName[SomeNode]("foo")
         self.assertTrue(ref.try_to_resolve(candidates=[SomeNode(name="foo")]))
