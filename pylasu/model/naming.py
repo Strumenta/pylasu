@@ -51,7 +51,7 @@ class ReferenceByName(Generic[T]):
 
 
 @dataclass
-class Symbol(Named):
+class Symbol(PossiblyNamed):
     pass
 
 
