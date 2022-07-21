@@ -3,7 +3,6 @@ import unittest
 
 from pylasu.model import Node, Position, Point
 from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
-from typing import List
 
 
 @dataclasses.dataclass
