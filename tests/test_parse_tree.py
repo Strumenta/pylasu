@@ -24,7 +24,9 @@ class ParseTreeTest(unittest.TestCase):
         generate_nodes_classes_for_parser(SimpleLangParser, globals())
         self.assertTrue("CompilationUnit" in globals())
         CompilationUnit = globals()["CompilationUnit"]
-        cu = CompilationUnit(syntax_before="# Generated" + os.linesep, syntax_after=os.linesep + "# End")
+        cu = CompilationUnit()
+        cu.syntax_before = "# Generated" + os.linesep
+        cu.syntax_after = os.linesep + "# End"
         self.assertIsNotNone(cu)
         self.assertTrue(("statement_list", []) in cu.properties)
         self.assertEqual("""# Generated
