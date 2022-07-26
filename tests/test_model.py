@@ -19,13 +19,13 @@ class ModelTest(unittest.TestCase):
         self.assertIsNone(node.origin)
 
     def test_node_with_position(self):
-        node = Node(position=Position(Point(1, 0), Point(2, 1)))
+        node = Node().with_position(Position(Point(1, 0), Point(2, 1)))
         self.assertEqual(Position(Point(1, 0), Point(2, 1)), node.position)
-        node = SomeNode(position=Position(Point(1, 0), Point(2, 1)))
+        node = SomeNode().with_position(Position(Point(1, 0), Point(2, 1)))
         self.assertEqual(Position(Point(1, 0), Point(2, 1)), node.position)
 
     def test_node_properties(self):
-        node = SomeNode(position=Position(Point(1, 0), Point(2, 1)))
+        node = SomeNode().with_position(Position(Point(1, 0), Point(2, 1)))
         self.assertIsNotNone(next(n for n, _ in node.properties if n == 'foo'))
         self.assertIsNotNone(next(n for n, _ in node.properties if n == 'bar'))
         with self.assertRaises(StopIteration):

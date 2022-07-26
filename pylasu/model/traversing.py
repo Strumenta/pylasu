@@ -1,3 +1,5 @@
+from typing import List
+
 from . import Position
 from .model import Node
 from ..support import extension_method
