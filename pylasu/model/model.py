@@ -1,7 +1,6 @@
 import ast
 import inspect
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Optional, Callable
 
 from .position import Position, Source

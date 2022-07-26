@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Callable, List, Sequence, Set
+from typing import Callable, List, Set
 
 from . import walk
 from .model import Node, internal_property
@@ -65,4 +65,3 @@ def replace_with(self: Node, other: Node):
     if not self.parent:
         raise Exception("Parent not set, cannot replace node")
     transform_children(self.parent, lambda x: other if x == self else x)
-
