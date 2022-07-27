@@ -74,148 +74,59 @@ class ModelTest(unittest.TestCase):
         with self.assertRaises(StopIteration):
             next(n for n, _ in node.properties if n == "origin")
 
-    def test_scope_lookup_symbol_by_name_found(self):
-        local_symbol_0 = SomeSymbol(name="a", index=0)
-        local_symbol_1 = SomeSymbol(name="a", index=1)
-        upper_symbol_0 = SomeSymbol(name="b", index=2)
-        upper_symbol_1 = SomeSymbol(name="a", index=3)
-        root_symbol_0 = SomeSymbol(name="a", index=4)
-        root_symbol_1 = SomeSymbol(name="b", index=5)
-        scope = Scope(symbols=[local_symbol_0, local_symbol_1],
-                      parent=Scope(symbols=[upper_symbol_0, upper_symbol_1],
-                                   parent=Scope(symbols=[root_symbol_0, root_symbol_1],
-                                                parent=None)))
-        # retrieve all symbols with name 'a'
-        result = scope.lookup("a")
-        self.assertEquals(len(result), 4)
-        self.assertEquals(result[0], local_symbol_0)
-        self.assertEquals(result[1], local_symbol_1)
-        self.assertEquals(result[2], upper_symbol_1)
-        self.assertEquals(result[3], root_symbol_0)
+    def test_scope_lookup_0(self):
+        """Symbol found in local scope with name and default type"""
+        local_symbol = SomeSymbol(name='a', index=0)
+        scope = Scope(symbols={'a': [local_symbol]}, parent=Scope(symbols={'a': [SomeSymbol(name='a', index=1)]}))
+        result = scope.lookup(symbol_name='a')
+        self.assertEquals(result, local_symbol)
+        self.assertIsInstance(result, Symbol)
 
-    def test_scope_lookup_symbol_by_name_not_found(self):
-        local_symbol = SomeSymbol(name="a", index=0)
-        upper_symbol = SomeSymbol(name="b", index=1)
-        root_symbol = SomeSymbol(name="c", index=2)
-        scope = Scope(symbols=[local_symbol],
-                      parent=Scope(symbols=[upper_symbol],
-                                   parent=Scope(symbols=[root_symbol],
-                                                parent=None)))
-        # retrieve all symbols with name 'd'
-        result = scope.lookup("d")
-        self.assertEquals(len(result), 0)
+    def test_scope_lookup_1(self):
+        """Symbol found in upper scope with name and default type"""
+        upper_symbol = SomeSymbol(name='a', index=0)
+        scope = Scope(symbols={'b': [SomeSymbol(name='b', index=0)]}, parent=Scope(symbols={'a': [upper_symbol]}))
+        result = scope.lookup(symbol_name='a')
+        self.assertEquals(result, upper_symbol)
+        self.assertIsInstance(result, Symbol)
 
-    def test_scope_lookup_symbol_by_type_found(self):
-        local_symbol_0 = Symbol(name="a")
-        local_symbol_1 = SomeSymbol(name="b", index=0)
-        upper_symbol_0 = SomeSymbol(name="a", index=1)
-        upper_symbol_1 = Symbol(name="a")
-        root_symbol_0 = Symbol(name="a")
-        root_symbol_1 = SomeSymbol(name="b", index=2)
-        scope = Scope(symbols=[local_symbol_0, local_symbol_1],
-                      parent=Scope(symbols=[upper_symbol_0, upper_symbol_1],
-                                   parent=Scope(symbols=[root_symbol_0, root_symbol_1],
-                                                parent=None)))
-        # retrieve all symbols of type SomeSymbol
-        result = scope.lookup(symbol_type=SomeSymbol)
-        self.assertEquals(len(result), 3)
-        self.assertEquals(result[0], local_symbol_1)
-        self.assertEquals(result[1], upper_symbol_0)
-        self.assertEquals(result[2], root_symbol_1)
-        # retrieve all symbols of type Symbol
-        result = scope.lookup(symbol_type=Symbol)
-        self.assertEquals(len(result), 6)
-        self.assertEquals(result[0], local_symbol_0)
-        self.assertEquals(result[1], local_symbol_1)
-        self.assertEquals(result[2], upper_symbol_0)
-        self.assertEquals(result[3], upper_symbol_1)
-        self.assertEquals(result[4], root_symbol_0)
-        self.assertEquals(result[5], root_symbol_1)
+    def test_scope_lookup_2(self):
+        """Symbol not found with name and default type"""
+        scope = Scope(symbols={'b': [SomeSymbol(name='b', index=0)]},
+                      parent=Scope(symbols={'b': [SomeSymbol(name='b', index=1)]}))
+        result = scope.lookup(symbol_name='a')
+        self.assertIsNone(result)
 
-    def test_scope_lookup_symbol_by_type_not_found(self):
-        local_symbol = Symbol(name="a")
-        upper_symbol = Symbol(name="b")
-        root_symbol = Symbol(name="c")
-        scope = Scope(symbols=[local_symbol],
-                      parent=Scope(symbols=[upper_symbol],
-                                   parent=Scope(symbols=[root_symbol],
-                                                parent=None)))
-        # retrieve all symbols of type SomeSymbol
-        result = scope.lookup(symbol_type=SomeSymbol)
-        self.assertEquals(len(result), 0)
+    def test_scope_lookup_3(self):
+        """Symbol found in local scope with name and type"""
+        pass
 
-        # retrieve all symbols of type Symbol
-        result = scope.lookup(symbol_type=Symbol)
-        self.assertEquals(len(result), 3)
-        self.assertEquals(result[0], local_symbol)
-        self.assertEquals(result[1], upper_symbol)
-        self.assertEquals(result[2], root_symbol)
+    def test_scope_lookup_4(self):
+        """Symbol found in upper scope with name and type"""
+        upper_symbol = SomeSymbol(name='a', index=0)
+        scope = Scope(symbols={'b': [SomeSymbol(name='b', index=0)]}, parent=Scope(symbols={'a': [upper_symbol]}))
+        result = scope.lookup(symbol_name='a', symbol_type=SomeSymbol)
+        self.assertEquals(result, upper_symbol)
+        self.assertIsInstance(result, SomeSymbol)
 
-    def test_scope_lookup_symbol_by_name_and_type_found(self):
-        local_symbol_0 = Symbol(name="a")
-        local_symbol_1 = SomeSymbol(name="b", index=0)
-        upper_symbol_0 = SomeSymbol(name="a", index=1)
-        upper_symbol_1 = Symbol(name="b")
-        root_symbol_0 = Symbol(name="a")
-        root_symbol_1 = SomeSymbol(name="b", index=2)
-        scope = Scope(symbols=[local_symbol_0, local_symbol_1],
-                      parent=Scope(symbols=[upper_symbol_0, upper_symbol_1],
-                                   parent=Scope(symbols=[root_symbol_0, root_symbol_1],
-                                                parent=None)))
-        # retrieve all symbols of type SomeSymbol with name 'a'
-        result = scope.lookup(symbol_name="a", symbol_type=SomeSymbol)
-        self.assertEquals(len(result), 1)
-        self.assertEquals(result[0], upper_symbol_0)
-        # retrieve all symbols of type SomeSymbol with name 'b'
-        result = scope.lookup(symbol_name="b", symbol_type=SomeSymbol)
-        self.assertEquals(len(result), 2)
-        self.assertEquals(result[0], local_symbol_1)
-        self.assertEquals(result[1], root_symbol_1)
+    def test_scope_lookup_5(self):
+        """Symbol found in upper scope with name and type (local with different type)"""
+        upper_symbol = SomeSymbol(name='a', index=0)
+        scope = Scope(symbols={'a': [AnotherSymbol(name='a', index=0)]}, parent=Scope(symbols={'a': [upper_symbol]}))
+        result = scope.lookup(symbol_name='a', symbol_type=SomeSymbol)
+        self.assertEquals(result, upper_symbol)
+        self.assertIsInstance(result, SomeSymbol)
 
-    def test_scope_lookup_symbol_by_name_and_type_not_found(self):
-        local_symbol_0 = Symbol(name="a")
-        local_symbol_1 = SomeSymbol(name="b", index=0)
-        upper_symbol_0 = SomeSymbol(name="a", index=1)
-        upper_symbol_1 = Symbol(name="b")
-        root_symbol_0 = Symbol(name="a")
-        root_symbol_1 = SomeSymbol(name="b", index=2)
-        scope = Scope(symbols=[local_symbol_0, local_symbol_1],
-                      parent=Scope(symbols=[upper_symbol_0, upper_symbol_1],
-                                   parent=Scope(symbols=[root_symbol_0, root_symbol_1],
-                                                parent=None)))
-        # retrieve all symbols of type SomeSymbol with name 'c'
-        result = scope.lookup(symbol_name="c", symbol_type=SomeSymbol)
-        self.assertEquals(len(result), 0)
-        # retrieve all symbols of type AnotherSymbol with name 'a'
-        result = scope.lookup(symbol_name="a", symbol_type=AnotherSymbol)
-        self.assertEquals(len(result), 0)
+    def test_scope_lookup_6(self):
+        """Symbol not found with name and type (different name)"""
+        scope = Scope(symbols={'b': [SomeSymbol(name='b', index=0)]},
+                      parent=Scope(symbols={'b': [SomeSymbol(name='b', index=1)]}))
+        result = scope.lookup(symbol_name='a', symbol_type=SomeSymbol)
+        self.assertIsNone(result)
 
-    def test_scope_lookup_with_default_arguments(self):
-        local_symbol_0 = Symbol(name="a")
-        local_symbol_1 = SomeSymbol(name="b", index=0)
-        upper_symbol_0 = SomeSymbol(name="a", index=1)
-        upper_symbol_1 = Symbol(name="b")
-        root_symbol_0 = Symbol(name="a")
-        root_symbol_1 = SomeSymbol(name="b", index=2)
-        scope = Scope(symbols=[local_symbol_0, local_symbol_1],
-                      parent=Scope(symbols=[upper_symbol_0, upper_symbol_1],
-                                   parent=Scope(symbols=[root_symbol_0, root_symbol_1],
-                                                parent=None)))
-        # retrieve all symbols of type Symbol with name None
-        result = scope.lookup(symbol_name=None, symbol_type=Symbol)
-        self.assertEquals(len(result), 6)
-        self.assertEquals(result[0], local_symbol_0)
-        self.assertEquals(result[1], local_symbol_1)
-        self.assertEquals(result[2], upper_symbol_0)
-        self.assertEquals(result[3], upper_symbol_1)
-        self.assertEquals(result[4], root_symbol_0)
-        self.assertEquals(result[5], root_symbol_1)
-        # retrieve all symbols of type Symbol with name ''
-        result = scope.lookup(symbol_name='', symbol_type=Symbol)
-        self.assertEquals(len(result), 6)
-        self.assertEquals(result[0], local_symbol_0)
-        self.assertEquals(result[1], local_symbol_1)
-        self.assertEquals(result[2], upper_symbol_0)
-        self.assertEquals(result[3], upper_symbol_1)
-        self.assertEquals(result[4], root_symbol_0)
-        self.assertEquals(result[5], root_symbol_1)
+    def test_scope_lookup_7(self):
+        """Symbol not found with name and type (different type)"""
+        scope = Scope(symbols={'a': [SomeSymbol(name='a', index=0)]},
+                      parent=Scope(symbols={'a': [SomeSymbol(name='a', index=1)]}))
+        result = scope.lookup(symbol_name='a', symbol_type=AnotherSymbol)
+        self.assertIsNone(result)
