@@ -1,11 +1,9 @@
-from dataclasses import dataclass
 from typing import Sequence
 
 from pylasu.model import Node
 from pylasu.model.model import internal_properties
 
 
-@dataclass
 @internal_properties("syntax_before", "syntax_after")
 class NodeWithSyntax(Node):
     syntax_before: str = ""

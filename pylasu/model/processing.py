@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from typing import Callable, List, Set
 
 from . import walk
 from .model import Node, internal_property
@@ -39,3 +40,28 @@ def search_by_type(self: Node, target_type, walker=walk):
     for node in walker(self):
         if isinstance(node, target_type):
             yield node
+
+
+@extension_method(Node)
+def transform_children(self: Node, operation: Callable[[Node], Node]):
+    for name, value in self.properties:
+        if isinstance(value, Node):
+            new_value = operation(value)
+            if new_value != value:
+                setattr(self, name, new_value)
+        elif isinstance(value, List):
+            setattr(self, name, [operation(item) if isinstance(item, Node) else item for item in value])
+        elif isinstance(value, Set):
+            raise Exception("Sets are not supported currently")
+
+
+@extension_method(Node)
+def replace_with(self: Node, other: Node):
+    """Replace this node with another (by modifying the children of the parent node).
+    For this to work, this node must have a parent assigned.
+
+    :param self: the node to replace.
+    :param other: the replacement node."""
+    if not self.parent:
+        raise Exception("Parent not set, cannot replace node")
+    transform_children(self.parent, lambda x: other if x == self else x)
