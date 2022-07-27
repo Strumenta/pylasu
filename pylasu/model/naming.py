@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import TypeVar, Generic, Optional, List
+from typing import TypeVar, Generic, Optional, List, Dict
 
 
 @dataclass
@@ -57,29 +57,12 @@ class Symbol(PossiblyNamed):
 
 @dataclass
 class Scope:
-    # local symbols
-    symbols: List[Symbol] = field(default_factory=list)
-    # parent scope
+    symbols: Dict[str, List[Symbol]] = field(default_factory=list)
     parent: Optional['Scope'] = field(default=None)
 
-    # retrieve symbols from name, type or both
-    def lookup(self, symbol_name: str = None, symbol_type: type = Symbol) -> List[Symbol]:
-        # retrieve symbols from current scope
-        local_symbols: List[Symbol] = self.__symbols(symbol_name, symbol_type)
-        # retrieve symbols from upper scopes
-        upper_symbols: List[Symbol] = self.parent.lookup(symbol_name, symbol_type) if self.parent else []
-        # concatenate symbols with locals first
-        return local_symbols + upper_symbols
+    def lookup(self, symbol_name: str, symbol_type: type = Symbol) -> Optional[Symbol]:
+        return next((symbol for symbol in self.symbols.get(symbol_name, []) if isinstance(symbol, symbol_type)),
+                    self.parent.lookup(symbol_name, symbol_type) if self.parent is not None else None)
 
-    def __symbols(self, symbol_name: str = None, symbol_type: type = Symbol):
-        def __check_symbol_name(symbol: Symbol) -> bool:
-            # compare symbol name, ignore test if undefined (True)
-            return symbol.name == symbol_name if symbol_name else True
-
-        def __check_symbol_type(symbol: Symbol) -> bool:
-            # compare symbol type, ignore test if undefined (True)
-            return isinstance(symbol, symbol_type) if symbol_type else True
-
-        # retrieve symbols from name, type or both
-        return [symbol for symbol in self.symbols if
-                __check_symbol_name(symbol) and __check_symbol_type(symbol)]
+    def add(self, symbol: Symbol):
+        self.symbols[symbol.name] = self.symbols.get(symbol.name, []) + [symbol]
