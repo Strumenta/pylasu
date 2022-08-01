@@ -24,6 +24,12 @@ class Issue:
     severity: IssueSeverity = IssueSeverity.ERROR
     position: Position = None
 
+    def __str__(self):
+        msg = f"{self.severity.name.capitalize()} ({self.type.name.lower()}): {self.message}"
+        if self.position:
+            msg += f" @ {self.position}"
+        return msg
+
 
 @dataclass
 class Result:

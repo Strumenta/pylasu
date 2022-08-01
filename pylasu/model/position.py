@@ -45,8 +45,11 @@ class Point:
         else:
             raise NotImplementedError()
 
-    def __str__(self):
+    def __repr__(self):
         return f"Line {self.line}, Column {self.column}"
+
+    def __str__(self):
+        return f"{self.line}:{self.column}"
 
 
 class Source:
@@ -68,6 +71,9 @@ class SourceSetElement(Source):
 @dataclass
 class FileSource(Source):
     file: Path
+
+    def __str__(self):
+        return str(self.file)
 
 
 @dataclass
@@ -100,9 +106,15 @@ class Position:
     def __contains__(self, pos):
         return isinstance(pos, Position) and self.start <= pos.start and self.end >= pos.end
 
-    def __str__(self):
+    def __repr__(self):
         return f"Position(start={self.start}, end={self.end}"\
                + (f", source={self.source}" if self.source is not None else "")
+
+    def __str__(self):
+        str_rep = (f"{self.source}:" if self.source is not None else "") + str(self.start)
+        if self.start != self.end:
+            str_rep += f"-{self.end}"
+        return str_rep
 
 
 def pos(start_line: int, start_col: int, end_line: int, end_col: int, source: Source = None):
