@@ -1,8 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
-@dataclass
+@dataclass(order=True)
 class Point:
     line: int
     column: int
@@ -12,18 +12,6 @@ class Point:
             raise Exception(f"Line {self.line} cannot be less than 1")
         if self.column < 0:
             raise Exception(f"Column {self.column} cannot be less than 0")
-
-    def __lt__(self, other):
-        if isinstance(other, Point):
-            return self.line < other.line or (self.line == other.line and self.column < other.column)
-        else:
-            raise NotImplementedError()
-
-    def __le__(self, other):
-        if isinstance(other, Point):
-            return self.line < other.line or (self.line == other.line and self.column <= other.column)
-        else:
-            raise NotImplementedError()
 
     def __add__(self, other):
         if isinstance(other, str):
@@ -86,7 +74,7 @@ class URLSource(Source):
     url: str = None
 
 
-@dataclass
+@dataclass(order=True)
 class Position:
     """An area in a source file, from start to end.
     The start point is the point right before the starting character.
@@ -97,7 +85,7 @@ class Position:
     The Position of such text will be Position(Point(1, 0), Point(1, 5))."""
     start: Point
     end: Point
-    source: Source = None
+    source: Source = field(compare=False, default=None)
 
     def __post_init__(self):
         if self.end < self.start:
