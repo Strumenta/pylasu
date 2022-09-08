@@ -89,7 +89,7 @@ class Position:
 
     def __post_init__(self):
         if self.end < self.start:
-            raise Exception("End point can't be before starting point")
+            raise Exception(f"End point can't be before starting point: {self.start} – {self.end}")
 
     def __contains__(self, pos):
         return isinstance(pos, Position) and self.start <= pos.start and self.end >= pos.end
