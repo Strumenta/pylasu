@@ -1,4 +1,4 @@
-from pyecore.ecore import *
+from pyecore.ecore import EAttribute, EObject, EPackage, EReference, EString, MetaEClass
 
 from pylasu.StrumentaLanguageSupport import Result, Issue
 
@@ -7,10 +7,10 @@ TRANSPILATION_METAMODEL = EPackage(
 
 
 class TranspilationTrace(EObject, metaclass=MetaEClass):
-    original_code: EAttribute(name="originalCode", eType=EString)
+    original_code = EAttribute(name="originalCode", eType=EString)
     source_result = EReference(name="sourceResult", containment=True, eType=Result)
     target_result = EReference(name="targetResult", containment=True, eType=Result)
-    generated_code: EAttribute(name="generatedCode", eType=EString)
+    generated_code = EAttribute(name="generatedCode", eType=EString)
     issues = EReference(containment=True, eType=Issue, upper=-1)
 
     def __init__(self, *, original_code=None, source_result=None, target_result=None, generated_code=None, issues=None):

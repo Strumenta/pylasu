@@ -1,4 +1,3 @@
-import dataclasses
 import unittest
 
 import pylasu.StrumentaLanguageSupport as starlasu_metamodel
