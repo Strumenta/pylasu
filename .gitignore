@@ -8,3 +8,4 @@ dist
 pyvenv.cfg
 *.egg-info
 .eggs/
+__pycache__

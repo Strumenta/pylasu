@@ -1,4 +1,3 @@
-import ast
 import inspect
 from abc import ABC, abstractmethod
 from typing import Optional, Callable
@@ -36,7 +35,7 @@ def is_internal_property_or_method(value):
     return isinstance(value, internal_property) or isinstance(value, Callable)
 
 
-class Node(Origin, ast.AST):
+class Node(Origin):
     origin: Optional[Origin] = None
     parent: Optional["Node"] = None
     position_override: Optional[Position] = None
