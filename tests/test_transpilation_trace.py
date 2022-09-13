@@ -1,9 +1,14 @@
+import json
 import unittest
 
 import pylasu.StrumentaLanguageSupport as starlasu_metamodel
 from pylasu.StrumentaLanguageSupport import ASTNode
 from pylasu.playground.transpilation_trace import TranspilationTrace
 from pyecore.ecore import EString, EAttribute, EInt
+
+
+nsURI = "http://mypackage.com"
+name = "StrumentaLanguageSupportTranspilationTest"
 
 
 class ANode(ASTNode):
@@ -30,10 +35,35 @@ class ModelTest(unittest.TestCase):
                 message="some issue",
                 severity=starlasu_metamodel.IssueSeverity.getEEnumLiteral("WARNING"))]
         )
-        self.assertEqual("a:1", tt.original_code)
-        self.assertEqual("b:2", tt.generated_code)
+        self.assertEqual("a:1", tt.originalCode)
+        self.assertEqual("b:2", tt.generatedCode)
         self.assertEqual("some issue", tt.issues[0].message)
-        self.assertEqual("a", tt.source_result.root.name)
-        self.assertEqual(1, tt.source_result.root.value)
-        self.assertEqual("b", tt.target_result.root.name)
-        self.assertEqual(2, tt.target_result.root.value)
+        self.assertEqual("a", tt.sourceResult.root.name)
+        self.assertEqual(1, tt.sourceResult.root.value)
+        self.assertEqual("b", tt.targetResult.root.name)
+        self.assertEqual(2, tt.targetResult.root.value)
+
+        expected = """{
+  "eClass" : "https://strumenta.com/kolasu/transpilation/v1#//TranspilationTrace",
+  "originalCode" : "a:1",
+  "sourceResult" : {
+    "root" : {
+      "eClass" : "http://mypackage.com#//ANode",
+      "name" : "a",
+      "value" : 1
+    }
+  },
+  "targetResult" : {
+    "root" : {
+      "eClass" : "http://mypackage.com#//ANode",
+      "name" : "b",
+      "value" : 2
+    }
+  },
+  "generatedCode" : "b:2",
+  "issues" : [ {
+    "message" : "some issue",
+    "severity" : "WARNING"
+  } ]
+}"""
+        self.assertEqual(json.loads(expected), json.loads(tt.save_as_json("foo.json")))

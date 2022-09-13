@@ -1,30 +1,54 @@
-from pyecore.ecore import EAttribute, EObject, EPackage, EReference, EString, MetaEClass
+from io import IOBase, BytesIO
+
+from pyecore.ecore import EAttribute, EObject, EReference, EString, MetaEClass
+from pyecore.resources import ResourceSet, URI
+from pyecore.resources.json import JsonResource as BaseJsonResource
 
 from pylasu.StrumentaLanguageSupport import Result, Issue
 
-TRANSPILATION_METAMODEL = EPackage(
-    name="StrumentaLanguageSupportTranspilation", nsURI="https://strumenta.com/kolasu/transpilation/v1")
+nsURI = "https://strumenta.com/kolasu/transpilation/v1"
+name = "StrumentaLanguageSupportTranspilation"
+
+
+class JsonResource(BaseJsonResource):
+
+    def open_out_stream(self, other=None):
+        if isinstance(other, IOBase):
+            return other
+        else:
+            return super().open_out_stream(other)
 
 
 class TranspilationTrace(EObject, metaclass=MetaEClass):
-    original_code = EAttribute(name="originalCode", eType=EString)
-    source_result = EReference(name="sourceResult", containment=True, eType=Result)
-    target_result = EReference(name="targetResult", containment=True, eType=Result)
-    generated_code = EAttribute(name="generatedCode", eType=EString)
+    # Note: we use camelCase here because Pyecore's JSON serialization doesn't handle having different names for
+    # Python attributes and their corresponding Ecore structural features.
+    originalCode = EAttribute(eType=EString)
+    sourceResult = EReference(containment=True, eType=Result)
+    targetResult = EReference(containment=True, eType=Result)
+    generatedCode = EAttribute(eType=EString)
     issues = EReference(containment=True, eType=Issue, upper=-1)
 
     def __init__(self, *, original_code=None, source_result=None, target_result=None, generated_code=None, issues=None):
         super().__init__()
         if original_code is not None:
-            self.original_code = original_code
+            self.originalCode = original_code
         if source_result is not None:
-            self.source_result = source_result
+            self.sourceResult = source_result
         if target_result is not None:
-            self.target_result = target_result
+            self.targetResult = target_result
         if generated_code is not None:
-            self.generated_code = generated_code
+            self.generatedCode = generated_code
         if issues:
             self.issues.extend(issues)
 
-
-TRANSPILATION_METAMODEL.eContents.append(TranspilationTrace)
+    def save_as_json(self, name, *packages):
+        rset = ResourceSet()
+        rset.resource_factory['json'] = JsonResource
+        resource = rset.create_resource(URI(name))
+        for pkg in packages:
+            package_resource = rset.create_resource(URI(pkg.nsURI))
+            package_resource.contents.add(pkg)
+        resource.contents.append(self)
+        with BytesIO() as out:
+            resource.save(out)
+            return out.getvalue().decode('utf-8')

@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 setup(
     name='pylasu',
     packages=find_packages(exclude=["tests"]),
-    version='0.1.0',
+    version='0.2.0',
     description='Pylasu',
     author='Strumenta S.R.L.',
     license='Apache License V2',
