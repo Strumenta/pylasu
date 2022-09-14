@@ -1,11 +1,17 @@
 import json
 import unittest
 
-import pylasu.StrumentaLanguageSupport as starlasu_metamodel
+import pylasu.StrumentaLanguageSupport as starlasu
 from pylasu.StrumentaLanguageSupport import ASTNode
+from pylasu.emf.metamodel_builder import MetamodelBuilder
+from pylasu.emf.model import to_eobject
 from pylasu.playground.transpilation_trace import TranspilationTrace
-from pyecore.ecore import EString, EAttribute, EInt
+from pylasu.playground.transpilation_trace_ecore import TranspilationTrace as ETranspilationTrace
+from pyecore.ecore import EString, EAttribute, EInt, MetaEClass
+from pyecore.resources import Resource
 
+from pylasu.validation.validation import Result
+from tests.fixtures import Box
 
 nsURI = "http://mypackage.com"
 name = "StrumentaLanguageSupportTranspilationTest"
@@ -26,14 +32,14 @@ class ANode(ASTNode):
 class ModelTest(unittest.TestCase):
 
     def test_serialize_transpilation_issue(self):
-        tt = TranspilationTrace(
+        tt = ETranspilationTrace(
             original_code="a:1", generated_code="b:2",
-            source_result=starlasu_metamodel.Result(root=ANode(name="a", value=1)),
-            target_result=starlasu_metamodel.Result(root=ANode(name="b", value=2)),
-            issues=[starlasu_metamodel.Issue(
-                type=starlasu_metamodel.IssueType.getEEnumLiteral("TRANSLATION"),
+            source_result=starlasu.Result(root=ANode(name="a", value=1)),
+            target_result=starlasu.Result(root=ANode(name="b", value=2)),
+            issues=[starlasu.Issue(
+                type=starlasu.IssueType.getEEnumLiteral("TRANSLATION"),
                 message="some issue",
-                severity=starlasu_metamodel.IssueSeverity.getEEnumLiteral("WARNING"))]
+                severity=starlasu.IssueSeverity.getEEnumLiteral("WARNING"))]
         )
         self.assertEqual("a:1", tt.originalCode)
         self.assertEqual("b:2", tt.generatedCode)
@@ -67,3 +73,23 @@ class ModelTest(unittest.TestCase):
   } ]
 }"""
         self.assertEqual(json.loads(expected), json.loads(tt.save_as_json("foo.json")))
+
+    def test_serialize_transpilation_from_nodes(self):
+        res = Resource()
+        mmb = MetamodelBuilder("tests.fixtures", "https://strumenta.com/pylasu/test/fixtures", resource=res)
+        mmb.provide_class(Box)
+
+        tt = TranspilationTrace(
+            original_code="box(a)[foo, bar]", generated_code='<box name="a"><foo /><bar /></box>',
+            source_result=Result(Box("a")),
+            target_result=Result(Box("a"))).to_eobject(res)
+
+        expected = """{
+            "eClass": "https://strumenta.com/kolasu/transpilation/v1#//TranspilationTrace",
+            "generatedCode": "<box name=\\"a\\"><foo /><bar /></box>",
+            "originalCode": "box(a)[foo, bar]",
+            "sourceResult": {"root": {"eClass": "https://strumenta.com/pylasu/test/fixtures#//Box"}},
+            "targetResult": {"root": {"eClass": "https://strumenta.com/pylasu/test/fixtures#//Box"}}
+        }"""
+        as_json = tt.save_as_json("foo.json")
+        self.assertEqual(json.loads(expected), json.loads(as_json))

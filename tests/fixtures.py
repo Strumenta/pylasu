@@ -15,6 +15,11 @@ class Item(Node):
     name: str = None
 
 
+@dataclass
+class ReinforcedBox(Box):
+    strength: int = 10
+
+
 box = Box(
     name="root",
     contents=[
