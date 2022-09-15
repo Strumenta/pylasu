@@ -40,6 +40,9 @@ class MetamodelBuilder:
             eclass.eClass.ePackage = self.package
         return eclass
 
+    def generate(self):
+        return self.package
+
 
 def getannotations(cls):
     import inspect

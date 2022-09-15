@@ -16,9 +16,10 @@ def find_eclass_in_resource(cls: type, resource: Resource):
 def find_eclass(self: Resource, cls: type):
     eclass = find_eclass_in_resource(cls, self)
     if not eclass:
-        for r in (self.resource_set.resources if self.resource_set else []):
-            if r != self:
-                eclass = find_eclass_in_resource(cls, r)
+        for uri in (self.resource_set.resources if self.resource_set else {}):
+            resource = self.resource_set.resources[uri]
+            if resource != self:
+                eclass = find_eclass_in_resource(cls, resource)
                 if eclass:
                     return eclass
     return eclass

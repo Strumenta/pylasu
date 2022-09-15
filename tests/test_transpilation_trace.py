@@ -1,15 +1,13 @@
 import json
 import unittest
 
+from pyecore.ecore import EString, EAttribute, EInt
+
 import pylasu.StrumentaLanguageSupport as starlasu
 from pylasu.StrumentaLanguageSupport import ASTNode
 from pylasu.emf.metamodel_builder import MetamodelBuilder
-from pylasu.emf.model import to_eobject
 from pylasu.playground.transpilation_trace import TranspilationTrace
 from pylasu.playground.transpilation_trace_ecore import TranspilationTrace as ETranspilationTrace
-from pyecore.ecore import EString, EAttribute, EInt, MetaEClass
-from pyecore.resources import Resource
-
 from pylasu.validation.validation import Result
 from tests.fixtures import Box
 
@@ -75,14 +73,13 @@ class ModelTest(unittest.TestCase):
         self.assertEqual(json.loads(expected), json.loads(tt.save_as_json("foo.json")))
 
     def test_serialize_transpilation_from_nodes(self):
-        res = Resource()
-        mmb = MetamodelBuilder("tests.fixtures", "https://strumenta.com/pylasu/test/fixtures", resource=res)
+        mmb = MetamodelBuilder("tests.fixtures", "https://strumenta.com/pylasu/test/fixtures")
         mmb.provide_class(Box)
 
         tt = TranspilationTrace(
             original_code="box(a)[foo, bar]", generated_code='<box name="a"><foo /><bar /></box>',
             source_result=Result(Box("a")),
-            target_result=Result(Box("a"))).to_eobject(res)
+            target_result=Result(Box("a")))
 
         expected = """{
             "eClass": "https://strumenta.com/kolasu/transpilation/v1#//TranspilationTrace",
@@ -91,5 +88,5 @@ class ModelTest(unittest.TestCase):
             "sourceResult": {"root": {"eClass": "https://strumenta.com/pylasu/test/fixtures#//Box"}},
             "targetResult": {"root": {"eClass": "https://strumenta.com/pylasu/test/fixtures#//Box"}}
         }"""
-        as_json = tt.save_as_json("foo.json")
+        as_json = tt.save_as_json("foo.json", mmb.generate())
         self.assertEqual(json.loads(expected), json.loads(as_json))

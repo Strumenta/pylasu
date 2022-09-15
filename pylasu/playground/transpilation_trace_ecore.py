@@ -48,7 +48,7 @@ class TranspilationTrace(EObject, metaclass=MetaEClass):
         resource = rset.create_resource(URI(name))
         for pkg in packages:
             package_resource = rset.create_resource(URI(pkg.nsURI))
-            package_resource.contents.add(pkg)
+            package_resource.contents.append(pkg)
         resource.contents.append(self)
         with BytesIO() as out:
             resource.save(out)
