@@ -5,9 +5,8 @@ from pyecore.ecore import EString, EAttribute, EInt
 
 import pylasu.StrumentaLanguageSupport as starlasu
 from pylasu.StrumentaLanguageSupport import ASTNode
-from pylasu.emf.metamodel_builder import MetamodelBuilder
-from pylasu.playground.transpilation_trace import TranspilationTrace
-from pylasu.playground.transpilation_trace_ecore import TranspilationTrace as ETranspilationTrace
+from pylasu.emf import MetamodelBuilder
+from pylasu.playground import TranspilationTrace, ETranspilationTrace
 from pylasu.validation.validation import Result
 from tests.fixtures import Box
 

@@ -1,7 +1,7 @@
 import unittest
 from pyecore.ecore import EObject
 
-from pylasu.emf.metamodel_builder import MetamodelBuilder
+from pylasu.emf import MetamodelBuilder
 from tests.fixtures import Box, ReinforcedBox
 
 
