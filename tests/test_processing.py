@@ -38,8 +38,8 @@ class ProcessingTest(unittest.TestCase):
         b = BW(a1, [a2, a3])
         b.assign_parents()
         a2.replace_with(a4)
-        self.assertEquals("4", b.many_as[0].s)
-        self.assertEquals(BW(a1, [a4, a3]), b)
+        self.assertEqual("4", b.many_as[0].s)
+        self.assertEqual(BW(a1, [a4, a3]), b)
 
     def test_replace_in_set(self):
         a1 = AW("1")
@@ -56,4 +56,4 @@ class ProcessingTest(unittest.TestCase):
         b = BW(a1, [])
         b.assign_parents()
         a1.replace_with(a2)
-        self.assertEquals("2", b.a.s)
+        self.assertEqual("2", b.a.s)

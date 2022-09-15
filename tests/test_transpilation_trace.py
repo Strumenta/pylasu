@@ -8,7 +8,7 @@ from pylasu.StrumentaLanguageSupport import ASTNode
 from pylasu.emf import MetamodelBuilder
 from pylasu.playground import TranspilationTrace, ETranspilationTrace
 from pylasu.validation.validation import Result
-from tests.fixtures import Box
+from tests.fixtures import Box, Item
 
 nsURI = "http://mypackage.com"
 name = "StrumentaLanguageSupportTranspilationTest"
@@ -74,18 +74,42 @@ class ModelTest(unittest.TestCase):
     def test_serialize_transpilation_from_nodes(self):
         mmb = MetamodelBuilder("tests.fixtures", "https://strumenta.com/pylasu/test/fixtures")
         mmb.provide_class(Box)
+        mmb.provide_class(Item)
 
         tt = TranspilationTrace(
-            original_code="box(a)[foo, bar]", generated_code='<box name="a"><foo /><bar /></box>',
-            source_result=Result(Box("a")),
-            target_result=Result(Box("a")))
+            original_code="box(a)[i1, bar]", generated_code='<box name="A"><i1 /><bar /></box>',
+            source_result=Result(Box("a", [Item("i1"), Box("b", [Item("i2"), Item("i3")])])),
+            target_result=Result(Box("A")))
 
         expected = """{
             "eClass": "https://strumenta.com/kolasu/transpilation/v1#//TranspilationTrace",
-            "generatedCode": "<box name=\\"a\\"><foo /><bar /></box>",
-            "originalCode": "box(a)[foo, bar]",
-            "sourceResult": {"root": {"eClass": "https://strumenta.com/pylasu/test/fixtures#//Box"}},
-            "targetResult": {"root": {"eClass": "https://strumenta.com/pylasu/test/fixtures#//Box"}}
+            "generatedCode": "<box name=\\"A\\"><i1 /><bar /></box>",
+            "originalCode": "box(a)[i1, bar]",
+            "sourceResult": { "root": {
+                "eClass": "https://strumenta.com/pylasu/test/fixtures#//Box",
+                "name": "a",
+                "contents": [{
+                    "eClass": "https://strumenta.com/pylasu/test/fixtures#//Item",
+                    "name": "i1"
+                    }, {
+                        "eClass": "https://strumenta.com/pylasu/test/fixtures#//Box",
+                        "name": "b",
+                        "contents": [{
+                            "eClass": "https://strumenta.com/pylasu/test/fixtures#//Item",
+                            "name": "i2"
+                        }, {
+                            "eClass": "https://strumenta.com/pylasu/test/fixtures#//Item",
+                            "name": "i3"
+                        }]
+                    }]
+                }
+            },
+            "targetResult": { "root": {
+                "eClass": "https://strumenta.com/pylasu/test/fixtures#//Box", 
+                "name": "A",
+                "contents": []
+                }
+            }
         }"""
         as_json = tt.save_as_json("foo.json", mmb.generate())
         self.assertEqual(json.loads(expected), json.loads(as_json))
