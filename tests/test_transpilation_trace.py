@@ -105,7 +105,7 @@ class ModelTest(unittest.TestCase):
                 }
             },
             "targetResult": { "root": {
-                "eClass": "https://strumenta.com/pylasu/test/fixtures#//Box", 
+                "eClass": "https://strumenta.com/pylasu/test/fixtures#//Box",
                 "name": "A",
                 "contents": []
                 }
