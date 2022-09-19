@@ -25,6 +25,7 @@ ASTNode.origin.eType = Origin
 ASTNode.destination.eType = Destination
 Issue.position.eType = Position
 #  TODO eGenericType not supported ReferenceByName.referenced.eType =
+ReferenceByName.referenced.eType = ASTNode
 #  TODO eGenericType not supported
 Result.root.eType = ASTNode
 Result.issues.eType = Issue

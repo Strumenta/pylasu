@@ -5,7 +5,6 @@ from typing import List
 from pyecore.resources import Resource, ResourceSet, URI
 
 from pylasu import StrumentaLanguageSupport as starlasu
-from pylasu.emf.model import to_eobject
 from pylasu.playground.transpilation_trace_ecore import TranspilationTrace as ETranspilationTrace, JsonResource
 from pylasu.validation.validation import Result, Issue
 
@@ -22,8 +21,8 @@ class TranspilationTrace:
         mappings = {}
         return ETranspilationTrace(
             original_code=self.original_code,
-            source_result=starlasu.Result(root=to_eobject(self.source_result.root, resource, mappings)),
-            target_result=starlasu.Result(root=to_eobject(self.target_result.root, resource, mappings)),
+            source_result=starlasu.Result(root=self.source_result.root.to_eobject(resource, mappings)),
+            target_result=starlasu.Result(root=self.target_result.root.to_eobject(resource, mappings)),
             generated_code=self.generated_code
         )
 

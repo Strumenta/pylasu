@@ -34,7 +34,7 @@ def to_eobject(self: Node, resource: Resource, mappings=None):
     if mappings is None:
         mappings = {}
     elif id(self) in mappings:
-        return mappings[self]
+        return mappings[id(self)]
     eclass = resource.find_eclassifier(type(self))
     if not eclass:
         raise Exception("Unknown classifier for " + str(type(self)))

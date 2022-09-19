@@ -1,6 +1,7 @@
 from io import IOBase, BytesIO
 
-from pyecore.ecore import EObject, MetaEClass, EAttribute, EString, EReference
+import pyecore.ecore
+from pyecore.ecore import EObject, MetaEClass, EAttribute, EString, EReference, EDataType
 from pyecore.resources import ResourceSet, URI
 
 from pyecore.resources.json import JsonResource as BaseJsonResource
@@ -18,6 +19,13 @@ class JsonResource(BaseJsonResource):
             return other
         else:
             return super().open_out_stream(other)
+
+    @staticmethod
+    def serialize_eclass(eclass):
+        if eclass.name == "EEnum" and issubclass(eclass, EDataType):
+            return f'{pyecore.ecore.nsURI}#//EEnum'
+        else:
+            return f'{eclass.eRoot().nsURI}{eclass.eURIFragment()}'
 
 
 class TranspilationTrace(EObject, metaclass=MetaEClass):
