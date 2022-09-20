@@ -1,8 +1,8 @@
 import json
 import unittest
-from io import BytesIO
+from io import BytesIO, IOBase
 
-from pyecore.ecore import EObject
+from pyecore.ecore import EObject, EPackage, EEnum, EMetaclass, EAttribute, EString
 from pyecore.resources import URI
 
 from pylasu.StrumentaLanguageSupport import ASTNode
@@ -11,7 +11,39 @@ from pylasu.playground import JsonResource
 from tests.fixtures import Box, ReinforcedBox
 
 
+eClass = EPackage('test', nsURI='http://test/1.0', nsPrefix='test')
+nsURI = 'http://test/1.0'
+nsPrefix = 'test'
+
+BookCategory = EEnum('BookCategory', literals=['ScienceFiction', 'Biographie', 'Mistery'])
+eClass.eClassifiers.append(BookCategory)
+
+@EMetaclass
+class A(object):
+    names = EAttribute(eType=EString, upper=-1)
+    bcat = EAttribute(eType=BookCategory)
+
+
 class MetamodelBuilderTest(unittest.TestCase):
+    def test_pyecore_enum(self):
+        from pyecore.resources import ResourceSet
+        from pyecore.resources.json import JsonResource as BaseJsonResource
+
+        class TestJsonResource(BaseJsonResource):
+            def open_out_stream(self, other=None):
+                if isinstance(other, IOBase):
+                    return other
+                else:
+                    return super().open_out_stream(other)
+
+        rset = ResourceSet()
+        rset.resource_factory['json'] = lambda uri: TestJsonResource(uri=uri, indent=2)
+        resource = rset.create_resource('ZMM.json')
+        resource.append(eClass)
+        with BytesIO() as out:
+            resource.save(out)
+            self.assertEqual(out.getvalue().decode("utf-8"), "{}")
+
     def test_can_serialize_starlasu_model(self):
         starlasu_package = ASTNode.eClass.ePackage
         resource = JsonResource(URI(starlasu_package.nsURI))
