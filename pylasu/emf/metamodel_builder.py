@@ -31,7 +31,7 @@ def is_enum_type(attr_type):
 
 def is_sequence_type(attr_type):
     return isinstance(get_type_origin(attr_type), type) and \
-           issubclass(get_type_origin(attr_type), typing.Sequence)
+        issubclass(get_type_origin(attr_type), typing.Sequence)
 
 
 def get_type_arguments(tp):
