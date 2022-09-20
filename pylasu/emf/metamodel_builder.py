@@ -1,4 +1,5 @@
 import typing
+from collections.abc import Callable
 from dataclasses import is_dataclass, fields
 from enum import Enum, EnumMeta
 from types import resolve_bases
@@ -11,6 +12,37 @@ from pylasu.StrumentaLanguageSupport import ASTNode
 from pylasu.emf.model import find_eclassifier
 from pylasu.model import Node
 from pylasu.model.model import InternalField
+
+
+def get_type_origin(tp):
+    if hasattr(typing, "get_origin"):
+        return typing.get_origin(tp)
+    elif hasattr(tp, "__origin__"):
+        return tp.__origin__
+    elif tp is typing.Generic:
+        return typing.Generic
+    else:
+        return None
+
+
+def is_enum_type(attr_type):
+    return isinstance(attr_type, EnumMeta) and issubclass(attr_type, Enum)
+
+
+def is_sequence_type(attr_type):
+    return isinstance(get_type_origin(attr_type), type) and \
+           issubclass(get_type_origin(attr_type), typing.Sequence)
+
+
+def get_type_arguments(tp):
+    if hasattr(typing, "get_args"):
+        return typing.get_args(tp)
+    elif hasattr(tp, "__args__"):
+        res = tp.__args__
+        if get_type_origin(tp) is Callable and res[0] is not Ellipsis:
+            res = (list(res[:-1]), res[-1])
+        return res
+    return ()
 
 
 class MetamodelBuilder:
@@ -98,21 +130,14 @@ class MetamodelBuilder:
             return EAttribute(attr)
         elif self.is_node_type(attr_type):
             return EReference(attr, self.provide_class(attr_type), containment=True)
-        elif self.is_sequence_type(attr_type):
+        elif is_sequence_type(attr_type):
             return self.to_list_reference(attr, attr_type, default_unsupported_type)
-        elif typing.get_origin(attr_type) == typing.Union:
+        elif get_type_origin(attr_type) == typing.Union:
             return EReference(attr, EObject, containment=True)  # TODO here we could refine the type better
-        elif self.is_enum_type(attr_type):
+        elif is_enum_type(attr_type):
             return self.to_enum_attribute(attr, attr_type)
         else:
             return unsupported_type_handler(attr_type, attr)
-
-    def is_enum_type(self, attr_type):
-        return isinstance(attr_type, EnumMeta) and issubclass(attr_type, Enum)
-
-    def is_sequence_type(self, attr_type):
-        return isinstance(typing.get_origin(attr_type), type) and \
-            issubclass(typing.get_origin(attr_type), typing.Sequence)
 
     def is_node_type(self, attr_type):
         return isinstance(attr_type, type) and issubclass(attr_type, self.base_node_class)
@@ -124,7 +149,7 @@ class MetamodelBuilder:
         return EAttribute(attr, tp)
 
     def to_list_reference(self, attr, attr_type, default_unsupported_type):
-        type_args = typing.get_args(attr_type)
+        type_args = get_type_arguments(attr_type)
         if type_args and len(type_args) == 1:
             ft = self.to_structural_feature(attr, type_args[0], default_unsupported_type)
             ft.upperBound = -1
