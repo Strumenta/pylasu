@@ -1,9 +1,7 @@
 from io import IOBase, BytesIO
 
-import pyecore.ecore
-from pyecore.ecore import EObject, MetaEClass, EAttribute, EString, EReference, EDataType
+from pyecore.ecore import EObject, MetaEClass, EAttribute, EString, EReference
 from pyecore.resources import ResourceSet, URI
-
 from pyecore.resources.json import JsonResource as BaseJsonResource
 
 from pylasu import StrumentaLanguageSupport as starlasu
