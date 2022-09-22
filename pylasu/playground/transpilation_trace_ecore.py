@@ -20,13 +20,6 @@ class JsonResource(BaseJsonResource):
         else:
             return super().open_out_stream(other)
 
-    @staticmethod
-    def serialize_eclass(eclass):
-        if eclass.name == "EEnum" and issubclass(eclass, EDataType):
-            return f'{pyecore.ecore.nsURI}#//EEnum'
-        else:
-            return f'{eclass.eRoot().nsURI}{eclass.eURIFragment()}'
-
 
 class TranspilationTrace(EObject, metaclass=MetaEClass):
     # Note: we use camelCase here because Pyecore's JSON serialization doesn't handle having different names for

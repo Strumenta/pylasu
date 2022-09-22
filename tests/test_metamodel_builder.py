@@ -43,7 +43,7 @@ class MetamodelBuilderTest(unittest.TestCase):
         resource.append(eClass)
         with BytesIO() as out:
             resource.save(out)
-#            self.assertEqual(out.getvalue().decode("utf-8"), "{}")
+            self.assertEqual(out.getvalue().decode("utf-8"), "{}")
 
     def test_can_serialize_starlasu_model(self):
         starlasu_package = ASTNode.eClass.ePackage
