@@ -43,7 +43,46 @@ class MetamodelBuilderTest(unittest.TestCase):
         resource.append(eClass)
         with BytesIO() as out:
             resource.save(out)
-            self.assertEqual(out.getvalue().decode("utf-8"), "{}")
+            self.assertEqual(json.loads(out.getvalue().decode("utf-8")), json.loads('''{
+  "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EPackage",
+  "nsPrefix": "test",
+  "nsURI": "http://test/1.0",
+  "name": "test",
+  "eClassifiers": [
+    {
+      "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EEnum",
+      "name": "BookCategory",
+      "eLiterals": [
+        "ScienceFiction",
+        "Biographie",
+        "Mistery"
+      ]
+    },
+    {
+      "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EClass",
+      "eStructuralFeatures": [
+        {
+          "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
+          "upperBound": -1,
+          "name": "names",
+          "eType": {
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
+            "$ref": "#//EString"
+          }
+        },
+        {
+          "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
+          "name": "bcat",
+          "eType": {
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EEnum",
+            "$ref": "#//BookCategory"
+          }
+        }
+      ],
+      "name": "A"
+    }
+  ]
+}'''))
 
     def test_can_serialize_starlasu_model(self):
         starlasu_package = ASTNode.eClass.ePackage
@@ -51,7 +90,10 @@ class MetamodelBuilderTest(unittest.TestCase):
         resource.contents.append(starlasu_package)
         with BytesIO() as out:
             resource.save(out)
-            self.assertEqual(json.loads(out.getvalue().decode('utf-8')), json.loads(STARLASU_MODEL_JSON))
+            starlasu_model = json.loads(STARLASU_MODEL_JSON)
+            serialized_model = json.loads(out.getvalue().decode('utf-8'))
+            self.maxDiff = None
+            self.assertDictEqual(serialized_model, starlasu_model)
 
     def test_build_metamodel_single_package(self):
         mb = MetamodelBuilder("tests.fixtures", "https://strumenta.com/pylasu/test/fixtures")
@@ -87,7 +129,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "year",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EInt"
           }
         },
@@ -95,7 +137,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "month",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EInt"
           }
         },
@@ -103,7 +145,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "dayOfMonth",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EInt"
           }
         }
@@ -117,7 +159,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "hour",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EInt"
           }
         },
@@ -125,7 +167,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "minute",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EInt"
           }
         },
@@ -133,7 +175,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "second",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EInt"
           }
         },
@@ -141,7 +183,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "nanosecond",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EInt"
           }
         }
@@ -179,7 +221,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "line",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EInt"
           }
         },
@@ -187,7 +229,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "column",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EInt"
           }
         }
@@ -255,7 +297,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "message",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EString"
           }
         },
@@ -286,7 +328,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "name",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EString"
           }
         }
@@ -300,7 +342,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "name",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EString"
           }
         },
@@ -427,7 +469,7 @@ STARLASU_MODEL_JSON = '''{
           "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
           "name": "name",
           "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
             "$ref": "#//EString"
           }
         }
@@ -441,12 +483,12 @@ STARLASU_MODEL_JSON = '''{
       "name": "Named"
     },
     {
-      "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+      "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
       "instanceClassName": "java.math.BigDecimal",
       "name": "BigDecimal"
     },
     {
-      "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
+      "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
       "instanceClassName": "java.math.BigInteger",
       "name": "BigInteger"
     },
@@ -467,187 +509,6 @@ STARLASU_MODEL_JSON = '''{
         "INFO"
       ],
       "name": "IssueSeverity"
-    },
-    {
-      "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EClass",
-      "eStructuralFeatures": [
-        {
-          "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
-          "name": "instanceClassName",
-          "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-            "$ref": "#//EString"
-          }
-        },
-        {
-          "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
-          "name": "serializable",
-          "eType": {
-            "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-            "$ref": "#//EBoolean"
-          }
-        }
-      ],
-      "eSuperTypes": [
-        {
-          "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EClass",
-          "$ref": "#//EClassifier"
-        }
-      ],
-      "eOperations": [
-        {
-          "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EOperation",
-          "eParameters": [
-            {
-              "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EParameter",
-              "name": "self",
-              "required": true,
-              "eType": {
-                "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-                "$ref": "#//ENativeType"
-              }
-            },
-            {
-              "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EParameter",
-              "name": "value",
-              "required": true,
-              "eType": {
-                "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-                "$ref": "#//ENativeType"
-              }
-            }
-          ],
-          "name": "from_string"
-        },
-        {
-          "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EOperation",
-          "eParameters": [
-            {
-              "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EParameter",
-              "name": "self",
-              "required": true,
-              "eType": {
-                "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-                "$ref": "#//ENativeType"
-              }
-            },
-            {
-              "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EParameter",
-              "name": "value",
-              "required": true,
-              "eType": {
-                "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-                "$ref": "#//ENativeType"
-              }
-            }
-          ],
-          "name": "to_string"
-        }
-      ],
-      "name": "EDataType"
-    },
-    {
-      "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EClass",
-      "eStructuralFeatures": [
-        {
-          "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EReference",
-          "upperBound": -1,
-          "containment": true,
-          "name": "eLiterals",
-          "eType": {
-            "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EClass",
-            "$ref": "#//EEnumLiteral"
-          }
-        }
-      ],
-      "eSuperTypes": [
-        {
-          "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EClass",
-          "$ref": "#//EDataType"
-        }
-      ],
-      "eOperations": [
-        {
-          "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EOperation",
-          "eParameters": [
-            {
-              "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EParameter",
-              "name": "self",
-              "required": true,
-              "eType": {
-                "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-                "$ref": "#//ENativeType"
-              }
-            },
-            {
-              "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EParameter",
-              "name": "notif",
-              "required": true,
-              "eType": {
-                "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-                "$ref": "#//ENativeType"
-              }
-            }
-          ],
-          "name": "notifyChanged"
-        },
-        {
-          "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EOperation",
-          "eParameters": [
-            {
-              "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EParameter",
-              "name": "self",
-              "required": true,
-              "eType": {
-                "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-                "$ref": "#//ENativeType"
-              }
-            },
-            {
-              "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EParameter",
-              "name": "name",
-              "eType": {
-                "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-                "$ref": "#//ENativeType"
-              }
-            },
-            {
-              "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EParameter",
-              "name": "value",
-              "eType": {
-                "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-                "$ref": "#//ENativeType"
-              }
-            }
-          ],
-          "name": "getEEnumLiteral"
-        },
-        {
-          "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EOperation",
-          "eParameters": [
-            {
-              "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EParameter",
-              "name": "self",
-              "required": true,
-              "eType": {
-                "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-                "$ref": "#//ENativeType"
-              }
-            },
-            {
-              "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EParameter",
-              "name": "value",
-              "required": true,
-              "eType": {
-                "eClass": "https://strumenta.com/kolasu/v2#//EDataType",
-                "$ref": "#//ENativeType"
-              }
-            }
-          ],
-          "name": "from_string"
-        }
-      ],
-      "name": "EEnum"
     }
   ],
   "name": "StrumentaLanguageSupport",
