@@ -24,12 +24,7 @@ class ParseTreeOrigin(Origin):
 
     @internal_property
     def source_text(self) -> Optional[str]:
-        if isinstance(self.parse_tree, ParserRuleContext):
-            return self.parse_tree.get_original_text()
-        elif isinstance(self.parse_tree, TerminalNode):
-            return self.parse_tree.getText()
-        else:
-            return None
+        return self.parse_tree.get_original_text()
 
 
 def token_start_point(token: Token):
@@ -64,6 +59,11 @@ def to_position(self: TerminalNode, source: Source = None):
 @extension_method(Token)
 def to_position(self: Token, source: Source = None):
     return Position(self.start_point, self.end_point, source)
+
+
+@extension_method(ParseTree)
+def get_original_text(self: ParseTree) -> str:
+    return self.getText()
 
 
 @extension_method(ParserRuleContext)
