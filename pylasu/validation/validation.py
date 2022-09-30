@@ -1,5 +1,5 @@
 import enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 from pylasu.model import Position, Node
@@ -34,4 +34,4 @@ class Issue:
 @dataclass
 class Result:
     root: Node
-    issues: List[Issue]
+    issues: List[Issue] = field(default_factory=list)

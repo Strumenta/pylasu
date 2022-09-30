@@ -79,7 +79,7 @@ class ModelTest(unittest.TestCase):
         local_symbol = SomeSymbol(name='a', index=0)
         scope = Scope(symbols={'a': [local_symbol]}, parent=Scope(symbols={'a': [SomeSymbol(name='a', index=1)]}))
         result = scope.lookup(symbol_name='a')
-        self.assertEquals(result, local_symbol)
+        self.assertEqual(result, local_symbol)
         self.assertIsInstance(result, Symbol)
 
     def test_scope_lookup_1(self):
@@ -87,7 +87,7 @@ class ModelTest(unittest.TestCase):
         upper_symbol = SomeSymbol(name='a', index=0)
         scope = Scope(symbols={'b': [SomeSymbol(name='b', index=0)]}, parent=Scope(symbols={'a': [upper_symbol]}))
         result = scope.lookup(symbol_name='a')
-        self.assertEquals(result, upper_symbol)
+        self.assertEqual(result, upper_symbol)
         self.assertIsInstance(result, Symbol)
 
     def test_scope_lookup_2(self):
@@ -106,7 +106,7 @@ class ModelTest(unittest.TestCase):
         upper_symbol = SomeSymbol(name='a', index=0)
         scope = Scope(symbols={'b': [SomeSymbol(name='b', index=0)]}, parent=Scope(symbols={'a': [upper_symbol]}))
         result = scope.lookup(symbol_name='a', symbol_type=SomeSymbol)
-        self.assertEquals(result, upper_symbol)
+        self.assertEqual(result, upper_symbol)
         self.assertIsInstance(result, SomeSymbol)
 
     def test_scope_lookup_5(self):
@@ -114,7 +114,7 @@ class ModelTest(unittest.TestCase):
         upper_symbol = SomeSymbol(name='a', index=0)
         scope = Scope(symbols={'a': [AnotherSymbol(name='a', index=0)]}, parent=Scope(symbols={'a': [upper_symbol]}))
         result = scope.lookup(symbol_name='a', symbol_type=SomeSymbol)
-        self.assertEquals(result, upper_symbol)
+        self.assertEqual(result, upper_symbol)
         self.assertIsInstance(result, SomeSymbol)
 
     def test_scope_lookup_6(self):

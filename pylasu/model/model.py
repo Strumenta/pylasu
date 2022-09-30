@@ -1,6 +1,6 @@
-import ast
 import inspect
 from abc import ABC, abstractmethod
+from dataclasses import Field, MISSING
 from typing import Optional, Callable
 
 from .position import Position, Source
@@ -15,6 +15,19 @@ def internal_properties(*props: str):
         cls.__internal_properties__ = [*Node.__internal_properties__, *props]
         return cls
     return decorate
+
+
+class InternalField(Field):
+    pass
+
+
+def internal_field(
+        *, default=MISSING, default_factory=MISSING, init=True, repr=True, hash=None, compare=True, metadata=None):
+    """Return an object to identify internal dataclass fields. The arguments are the same as dataclasses.field."""
+
+    if default is not MISSING and default_factory is not MISSING:
+        raise ValueError('cannot specify both default and default_factory')
+    return InternalField(default, default_factory, init, repr, hash, compare, metadata)
 
 
 class Origin(ABC):
@@ -33,14 +46,14 @@ class Origin(ABC):
 
 
 def is_internal_property_or_method(value):
-    return isinstance(value, internal_property) or isinstance(value, Callable)
+    return isinstance(value, internal_property) or isinstance(value, InternalField) or isinstance(value, Callable)
 
 
-class Node(Origin, ast.AST):
+class Node(Origin):
     origin: Optional[Origin] = None
     parent: Optional["Node"] = None
     position_override: Optional[Position] = None
-    __internal_properties__ = ["origin", "parent", "position"]
+    __internal_properties__ = ["origin", "parent", "position", "position_override"]
 
     def __init__(self, origin: Optional[Origin] = None, parent: Optional["Node"] = None,
                  position_override: Optional[Position] = None):

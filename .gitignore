@@ -5,6 +5,8 @@ lib/
 venv
 build
 dist
+.venv
 pyvenv.cfg
 *.egg-info
 .eggs/
+__pycache__
