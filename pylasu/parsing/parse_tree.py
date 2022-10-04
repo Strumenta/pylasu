@@ -8,7 +8,6 @@ from pylasu.model import Origin, Position, Point
 from pylasu.model.model import internal_property, Node
 from pylasu.model.position import Source
 from pylasu.support import extension_method
-from pylasu.transformation.printing import NodeWithSyntax
 
 import inspect
 
@@ -99,7 +98,7 @@ def generate_nodes_classes_for_parser(parser_class: type, ns: dict):
             fields["__annotations__"][child_name] = field_type
             property_names.append(child_name)
         name = ast_node_name(name)
-        class_def = type(name, (NodeWithSyntax,), fields)
+        class_def = type(name, (Node,), fields)
         class_def.properties = properties_method(property_names)
         class_def.from_parse_tree = from_parse_tree_function(class_def, property_names, aliases, ns)
         ns[name] = dataclass(class_def)
