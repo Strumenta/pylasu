@@ -1,4 +1,3 @@
-import os
 import unittest
 
 from antlr4 import CommonTokenStream, InputStream
@@ -25,20 +24,5 @@ class ParseTreeTest(unittest.TestCase):
         self.assertTrue("CompilationUnit" in globals())
         CompilationUnit = globals()["CompilationUnit"]
         cu = CompilationUnit()
-        cu.syntax_before = "# Generated" + os.linesep
-        cu.syntax_after = os.linesep + "# End"
         self.assertIsNotNone(cu)
         self.assertTrue(("statement_list", []) in cu.properties)
-        self.assertEqual("""# Generated
-
-# End""", cu.to_string())
-
-    def test_parsing_unparsing_roundtrip(self):
-        code = "display\n42"
-        lexer = SimpleLangLexer(InputStream(code))
-        parser = SimpleLangParser(CommonTokenStream(lexer))
-        parse_tree = parser.compilationUnit()
-        generate_nodes_classes_for_parser(SimpleLangParser, globals())
-        CompilationUnit = globals()["CompilationUnit"]
-        cu = CompilationUnit.from_parse_tree(parse_tree)
-        self.assertEqual(code, cu.to_string())
