@@ -1,7 +1,7 @@
 import inspect
 from abc import ABC, abstractmethod
-from dataclasses import Field, MISSING
-from typing import Optional, Callable
+from dataclasses import Field, MISSING, dataclass, field
+from typing import Optional, Callable, List
 
 from .position import Position, Source
 
@@ -45,15 +45,37 @@ class Origin(ABC):
         return self.position.source if self.position is not None else None
 
 
+@dataclass
+class CompositeOrigin(Origin):
+    elements: List[Origin] = field(default_factory=list)
+    position: Optional[Position] = None
+    source_text: Optional[str] = None
+
+
+class Destination(ABC):
+    pass
+
+
+@dataclass
+class CompositeDestination(Destination):
+    elements: List[Destination] = field(default_factory=list)
+
+
+@dataclass
+class TextFileDestination(Destination):
+    position: Optional[Position] = None
+
+
 def is_internal_property_or_method(value):
     return isinstance(value, internal_property) or isinstance(value, InternalField) or isinstance(value, Callable)
 
 
-class Node(Origin):
+class Node(Origin, Destination):
     origin: Optional[Origin] = None
+    destination: Optional[Destination] = None
     parent: Optional["Node"] = None
     position_override: Optional[Position] = None
-    __internal_properties__ = ["origin", "parent", "position", "position_override"]
+    __internal_properties__ = ["origin", "destination", "parent", "position", "position_override"]
 
     def __init__(self, origin: Optional[Origin] = None, parent: Optional["Node"] = None,
                  position_override: Optional[Position] = None):
