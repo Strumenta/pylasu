@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pylasu"
+version = "0.3.0"
+authors = [
+    { name="Lorenzo Addazi", email="lorenzo.addazi@strumenta.com" },
+    { name="Alessio Stalla", email="alessio.stalla@strumenta.com" },
+    { name="Federico Tomassetti", email="federico@strumenta.com" },
+]
+description = "Pylasu is an AST Library in the StarLasu family, targeting the Python language."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/strumenta/pylasu"
+"Bug Tracker" = "https://github.com/strumenta/pylasu/issues"

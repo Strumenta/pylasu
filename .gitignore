@@ -10,3 +10,4 @@ pyvenv.cfg
 *.egg-info
 .eggs/
 __pycache__
+/.token

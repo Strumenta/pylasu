@@ -2,8 +2,8 @@ from setuptools import find_packages, setup
 setup(
     name='pylasu',
     packages=find_packages(exclude=["tests"]),
-    version='0.2.0',
-    description='Pylasu',
+    version='0.3.0',
+    description='Pylasu is an AST Library in the StarLasu family, targeting the Python language.',
     author='Strumenta S.R.L.',
     license='Apache License V2',
     install_requires=[],

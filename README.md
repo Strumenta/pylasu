@@ -4,14 +4,21 @@
 
 Pylasu is an AST Library in the [StarLasu](https://github.com/Strumenta/StarLasu) family, targeting the Python language.
 
+## Testing
+
+```shell
+python -m unittest discover tests 
+```
+
 ## Linting
 
-```
+```shell
 flake8 . && flake8 tests
 ```
 
-## Package
+## Packaging and distributing
 
-```
-python setup.py bdist_wheel
+```shell
+python -m build
+python -m twine upload dist/*
 ```
