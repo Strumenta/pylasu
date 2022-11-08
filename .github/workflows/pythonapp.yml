@@ -39,5 +39,5 @@ jobs:
         working-directory: tests
       - name: Test with pytest
         run: |
-          pip install pytest pytest-cov pyecore
+          pip install pytest pytest-cov pyecore==0.12.2
           pytest --cov=pylasu --cov-fail-under=40 tests
