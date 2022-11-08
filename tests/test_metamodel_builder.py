@@ -67,7 +67,7 @@ class MetamodelBuilderTest(unittest.TestCase):
           "name": "names",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EString"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
           }
         },
         {
@@ -130,7 +130,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "year",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EInt"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
           }
         },
         {
@@ -138,7 +138,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "month",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EInt"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
           }
         },
         {
@@ -146,7 +146,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "dayOfMonth",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EInt"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
           }
         }
       ],
@@ -160,7 +160,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "hour",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EInt"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
           }
         },
         {
@@ -168,7 +168,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "minute",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EInt"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
           }
         },
         {
@@ -176,7 +176,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "second",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EInt"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
           }
         },
         {
@@ -184,7 +184,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "nanosecond",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EInt"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
           }
         }
       ],
@@ -222,7 +222,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "line",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EInt"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
           }
         },
         {
@@ -230,7 +230,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "column",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EInt"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
           }
         }
       ],
@@ -298,7 +298,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "message",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EString"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
           }
         },
         {
@@ -329,7 +329,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "name",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EString"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
           }
         }
       ],
@@ -343,7 +343,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "name",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EString"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
           }
         },
         {
@@ -470,7 +470,7 @@ STARLASU_MODEL_JSON = '''{
           "name": "name",
           "eType": {
             "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
-            "$ref": "#//EString"
+            "$ref": "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
           }
         }
       ],
