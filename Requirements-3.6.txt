@@ -1,1 +1,1 @@
-dataclasses
+dataclasses==0.6
