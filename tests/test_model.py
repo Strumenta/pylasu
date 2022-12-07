@@ -1,5 +1,6 @@
 import dataclasses
 import unittest
+from typing import List
 
 from pylasu.model import Node, Position, Point
 from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
@@ -9,6 +10,8 @@ from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
 class SomeNode(Node, Named):
     foo = 3
     __private__ = 4
+    ref: Node = None
+    multiple: List[Node] = dataclasses.field(default_factory=list)
 
     def __post_init__(self):
         self.bar = 5
@@ -130,3 +133,16 @@ class ModelTest(unittest.TestCase):
                       parent=Scope(symbols={'a': [SomeSymbol(name='a', index=1)]}))
         result = scope.lookup(symbol_name='a', symbol_type=AnotherSymbol)
         self.assertIsNone(result)
+
+    def test_node_properties_meta(self):
+        pds = [pd for pd in sorted(SomeNode.node_properties, key=lambda x: x.name)]
+        self.assertEqual(4, len(pds))
+        self.assertEqual("foo", pds[0].name)
+        self.assertFalse(pds[0].provides_nodes)
+        self.assertEqual("multiple", pds[1].name)
+        # TODO self.assertTrue(pds[1].provides_nodes)
+        # TODO self.assertEqual(Multiplicity.MULTIPLE, pds[1].multiplicity)
+        self.assertEqual("name", pds[2].name)
+        self.assertFalse(pds[2].provides_nodes)
+        self.assertEqual("ref", pds[3].name)
+        self.assertTrue(pds[3].provides_nodes)

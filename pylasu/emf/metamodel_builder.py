@@ -12,6 +12,7 @@ from pylasu.StrumentaLanguageSupport import ASTNode
 from pylasu.emf.model import find_eclassifier
 from pylasu.model import Node
 from pylasu.model.model import InternalField
+from pylasu.reflection import getannotations
 
 
 def get_type_origin(tp):
@@ -195,17 +196,6 @@ class MetamodelBuilder:
             raise Exception("The following classes are missing from " + self.package.name + ": "
                             + ", ".join(n for n, _ in self.forward_references))
         return self.package
-
-
-def getannotations(cls):
-    import inspect
-    try:  # On Python 3.10+
-        return inspect.getannotations(cls)
-    except AttributeError:
-        if isinstance(cls, type):
-            return cls.__dict__.get('__annotations__', None)
-        else:
-            return getattr(cls, '__annotations__', None)
 
 
 # Monkey patch until fix

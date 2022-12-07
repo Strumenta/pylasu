@@ -1,9 +1,11 @@
+import enum
 import inspect
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, ABCMeta
 from dataclasses import Field, MISSING, dataclass, field
-from typing import Optional, Callable, List
+from typing import Optional, Callable, List, Generator
 
 from .position import Position, Source
+from ..reflection import getannotations
 
 
 class internal_property(property):
@@ -70,12 +72,52 @@ def is_internal_property_or_method(value):
     return isinstance(value, internal_property) or isinstance(value, InternalField) or isinstance(value, Callable)
 
 
-class Node(Origin, Destination):
+class Multiplicity(enum.Enum):
+    OPTIONAL = 0
+    SINGULAR = 1
+    MANY = 2
+
+
+@dataclass
+class PropertyDescriptor:
+    name: str
+    provides_nodes: bool
+    multiplicity: Multiplicity = Multiplicity.SINGULAR
+
+
+class Concept(ABCMeta):
+
+    def __init__(cls, what, bases=None, dict=None):
+        super().__init__(what, bases, dict)
+        cls.__internal_properties__ = ["origin", "destination", "parent", "position", "position_override"]
+
+    @property
+    def node_properties(cls):
+        anns = getannotations(cls)
+        names = set()
+        for name in anns:
+            if name not in names and cls.is_node_property(name):
+                provides_nodes = False
+                if name in anns:
+                    provides_nodes = isinstance(anns[name], type) and issubclass(anns[name], Node)
+                names.add(name)
+                yield PropertyDescriptor(name, provides_nodes)
+        for name in dir(cls):
+            if name not in names and cls.is_node_property(name):
+                names.add(name)
+                yield PropertyDescriptor(name, False)
+
+    def is_node_property(cls, name):
+        return not name.startswith('_') \
+               and name not in cls.__internal_properties__ \
+               and name not in [n for n, v in inspect.getmembers(cls, is_internal_property_or_method)]
+
+
+class Node(Origin, Destination, metaclass=Concept):
     origin: Optional[Origin] = None
     destination: Optional[Destination] = None
     parent: Optional["Node"] = None
     position_override: Optional[Position] = None
-    __internal_properties__ = ["origin", "destination", "parent", "position", "position_override"]
 
     def __init__(self, origin: Optional[Origin] = None, parent: Optional["Node"] = None,
                  position_override: Optional[Position] = None):
