@@ -2,7 +2,7 @@ import enum
 import inspect
 from abc import ABC, abstractmethod, ABCMeta
 from dataclasses import Field, MISSING, dataclass, field
-from typing import Optional, Callable, List, Generator
+from typing import Optional, Callable, List
 
 from .position import Position, Source
 from ..reflection import getannotations
@@ -109,8 +109,8 @@ class Concept(ABCMeta):
 
     def is_node_property(cls, name):
         return not name.startswith('_') \
-               and name not in cls.__internal_properties__ \
-               and name not in [n for n, v in inspect.getmembers(cls, is_internal_property_or_method)]
+            and name not in cls.__internal_properties__ \
+            and name not in [n for n, v in inspect.getmembers(cls, is_internal_property_or_method)]
 
 
 class Node(Origin, Destination, metaclass=Concept):
