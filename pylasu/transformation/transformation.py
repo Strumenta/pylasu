@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Callable, TypeVar, Generic, Optional, List, Set, Iterable
+from typing import Any, Dict, Callable, TypeVar, Generic, Optional, List, Set, Iterable, Type
 
 from pylasu.model import Node
+from pylasu.model.errors import GenericErrorNode
 from pylasu.validation import Issue
 
 Child = TypeVar('Child')
@@ -73,5 +74,29 @@ class ASTTransformer:
             node = self.make_node(factory, source)
             if not node:
                 return None
-            node.properties
+            for pd in type(node).node_properties:
+                child_key = type(node).__qualname__ + "#" + pd.name
+                child_node_factory = factory.children[child_key]
         # TODO
+
+    def make_node(self, factory: NodeFactory[Source, Target], source: Source) -> Optional[Node]:
+        try:
+            node = factory.constructor(source, self, factory)
+            if node:
+                node = node.with_origin(self.as_origin(source))
+            return node
+        except Exception as e:
+            if self.allow_generic_node:
+                return GenericErrorNode(error=e).with_origin(self.as_origin(source))
+            else:
+                raise e
+
+    def get_node_factory(self, node_type: Type[Source]) -> Optional[NodeFactory[Source, Target]]:
+        factory = self.factories[node_type]
+        if factory:
+            return factory
+        else:
+            for superclass in node_type.__mro__:
+                factory = self.get_node_factory(superclass)
+                if factory:
+                    return factory
