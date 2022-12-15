@@ -30,6 +30,10 @@ class Issue:
             msg += f" @ {self.position}"
         return msg
 
+    @staticmethod
+    def semantic(message: str, severity: IssueSeverity = IssueSeverity.ERROR, position: Position = None):
+        return Issue(IssueType.SEMANTIC, message, severity, position)
+
 
 @dataclass
 class Result:

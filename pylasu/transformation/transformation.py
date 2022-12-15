@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Callable, TypeVar, Generic, Optional, List, Set, Iterable, Type
 
-from pylasu.model import Node
+from pylasu.model import Node, Origin
 from pylasu.model.errors import GenericErrorNode
-from pylasu.validation import Issue
+from pylasu.model.model import PropertyDescriptor
+from pylasu.transformation.generic_nodes import GenericNode
+from pylasu.validation import Issue, IssueSeverity
 
 Child = TypeVar('Child')
 Output = TypeVar('Output', bound=Node)
@@ -68,7 +70,6 @@ class ASTTransformer:
             return None
         elif isinstance(source, Iterable):
             raise Exception("Mapping error: received collection when value was expected")
-        node = None
         factory = self.get_node_factory(type(source))
         if factory:
             node = self.make_node(factory, source)
@@ -77,7 +78,45 @@ class ASTTransformer:
             for pd in type(node).node_properties:
                 child_key = type(node).__qualname__ + "#" + pd.name
                 child_node_factory = factory.children[child_key]
-        # TODO
+                if not child_node_factory:
+                    child_node_factory = factory.children[pd.name]
+                if child_node_factory:
+                    if child_node_factory != NO_CHILD_NODE:
+                        self.set_child(child_node_factory, source, node, pd)
+                else:
+                    # TODO should we support @Mapped?
+                    factory.children[child_key] = NO_CHILD_NODE
+            factory.finalizer(node)
+            node.parent = parent
+        else:
+            if self.allow_generic_node:
+                origin = self.as_origin(source)
+                node = GenericNode(parent).with_origin(origin)
+                self.issues.append(
+                    Issue.semantic(
+                        f"Source node not mapped: {type(source).__qualname__}",
+                        IssueSeverity.INFO,
+                        origin.position if origin else None))
+            else:
+                raise Exception(f"Unable to translate node {source} (${type(source)})")
+        return node
+
+    def as_origin(self, source: Any) -> Optional[Origin]:
+        return source if isinstance(source, Origin) else None
+
+    def set_child(self, child_node_factory: ChildNodeFactory, source: Any, node: Node, pd: PropertyDescriptor):
+        src = child_node_factory.get(self.get_source(node, source))
+        if pd.multiple():
+            child = [self.transform(it, node) for it in src or [] if it is not None]
+        else:
+            child = self.transform(src, node)
+        try:
+            child_node_factory.set(node, child)
+        except Exception as e:
+            raise Exception(f"Could not set child {child_node_factory}") from e
+
+    def get_source(self, node: Node, source: Any) -> Any:
+        return source
 
     def make_node(self, factory: NodeFactory[Source, Target], source: Source) -> Optional[Node]:
         try:

@@ -84,6 +84,9 @@ class PropertyDescriptor:
     provides_nodes: bool
     multiplicity: Multiplicity = Multiplicity.SINGULAR
 
+    def multiple(self):
+        return self.multiplicity == Multiplicity.MANY
+
 
 class Concept(ABCMeta):
 
