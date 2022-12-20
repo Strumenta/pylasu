@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import List
 
 from pylasu.model import Node
-from pylasu.transformation.transformation import ASTTransformer, node_property
+from pylasu.transformation.transformation import ASTTransformer, PropertyRef
 
 
 @dataclass
@@ -25,9 +25,9 @@ class SetStatement(Node):
 class ASTTransformerTest(unittest.TestCase):
 
     def test_identitiy_transformer(self):
-        prop = node_property("statements", CU)
+        prop = PropertyRef("statements")
         transformer = ASTTransformer()
-        transformer.register_node_factory(CU, CU).with_child(prop[0], prop[1], "statements")
+        transformer.register_node_factory(CU, CU).with_child(prop, prop)
         transformer.register_identity_transformation(DisplayIntStatement)
         transformer.register_identity_transformation(SetStatement)
         cu = CU(statements=[

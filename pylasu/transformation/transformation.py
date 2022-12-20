@@ -15,6 +15,17 @@ node_factory_constructor_type = Callable[[Source, "ASTTransformer", "NodeFactory
 
 
 @dataclass
+class PropertyRef:
+    name: str
+
+    def get(self, node: Node):
+        return getattr(node, self.name)
+
+    def set(self, node: Node, value):
+        return setattr(node, self.name, value)
+
+
+@dataclass
 class NodeFactory(Generic[Source, Output]):
     constructor: node_factory_constructor_type
     children: Dict[str, "ChildNodeFactory[Source, Any, Any]"] = field(default_factory=dict)
@@ -22,15 +33,21 @@ class NodeFactory(Generic[Source, Output]):
 
     def with_child(
             self,
-            getter: Callable[[Source], Optional[Any]],
-            setter: Callable[[Target, Optional[Child]], None],
-            name: str,
+            getter: Union[Callable[[Source], Optional[Any]], PropertyRef],
+            setter: Union[Callable[[Target, Optional[Child]], None], PropertyRef],
+            name: Optional[str] = None,
             target_type: Optional[type] = None
     ) -> "NodeFactory[Source, Output]":
+        if not name:
+            name = setter.name
         if target_type:
             prefix = target_type.__qualname__ + "#"
         else:
             prefix = ""
+        if isinstance(getter, PropertyRef):
+            getter = getter.get
+        if isinstance(setter, PropertyRef):
+            setter = setter.set
         self.children[prefix + name] = ChildNodeFactory(prefix + name, getter, setter)
         return self
 
@@ -159,13 +176,3 @@ class ASTTransformer:
 
     def register_identity_transformation(self, node_class: Type[Target]):
         self.register_node_factory(node_class, lambda node: node)
-
-
-def node_property(name: str, node_type: Type[Node]):
-    def pget(node: node_type):
-        return getattr(node, name)
-
-    def pset(node: node_type, value):
-        return setattr(node, name, value)
-
-    return pget, pset
