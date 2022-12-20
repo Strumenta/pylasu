@@ -77,19 +77,7 @@ class ASTTransformer:
             if not node:
                 return None
             for pd in type(node).node_properties:
-                child_key = type(node).__qualname__ + "#" + pd.name
-                if child_key in factory.children:
-                    child_node_factory = factory.children[child_key]
-                elif pd.name in factory.children:
-                    child_node_factory = factory.children[pd.name]
-                else:
-                    child_node_factory = None
-                if child_node_factory:
-                    if child_node_factory != NO_CHILD_NODE:
-                        self.set_child(child_node_factory, source, node, pd)
-                else:
-                    # TODO should we support @Mapped?
-                    factory.children[child_key] = NO_CHILD_NODE
+                self.process_child(source, node, pd, factory)
             factory.finalizer(node)
             node.parent = parent
         else:
@@ -104,6 +92,21 @@ class ASTTransformer:
             else:
                 raise Exception(f"Unable to translate node {source} (${type(source)})")
         return node
+
+    def process_child(self, source, node, pd, factory):
+        child_key = type(node).__qualname__ + "#" + pd.name
+        if child_key in factory.children:
+            child_node_factory = factory.children[child_key]
+        elif pd.name in factory.children:
+            child_node_factory = factory.children[pd.name]
+        else:
+            child_node_factory = None
+        if child_node_factory:
+            if child_node_factory != NO_CHILD_NODE:
+                self.set_child(child_node_factory, source, node, pd)
+        else:
+            # TODO should we support @Mapped?
+            factory.children[child_key] = NO_CHILD_NODE
 
     def as_origin(self, source: Any) -> Optional[Origin]:
         return source if isinstance(source, Origin) else None
