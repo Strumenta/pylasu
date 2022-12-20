@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Any, Dict, Callable, TypeVar, Generic, Optional, List, Set, Iterable, Type
+from dataclasses import dataclass, field
+from typing import Any, Dict, Callable, TypeVar, Generic, Optional, List, Set, Iterable, Type, Union
 
 from pylasu.model import Node, Origin
 from pylasu.model.errors import GenericErrorNode
@@ -11,13 +11,14 @@ Child = TypeVar('Child')
 Output = TypeVar('Output', bound=Node)
 Source = TypeVar('Source')
 Target = TypeVar('Target')
+node_factory_constructor_type = Callable[[Source, "ASTTransformer", "NodeFactory[Source, Output]"], Optional[Output]]
 
 
 @dataclass
 class NodeFactory(Generic[Source, Output]):
-    constructor: Callable[[Source, "ASTTransformer", "NodeFactory[Source, Output]"], Optional[Output]]
-    children: Dict[str, "ChildNodeFactory[Source, Any, Any]"]
-    finalizer: Callable[[Source], None]
+    constructor: node_factory_constructor_type
+    children: Dict[str, "ChildNodeFactory[Source, Any, Any]"] = field(default_factory=dict)
+    finalizer: Callable[[Source], None] = lambda _: None
 
     def with_child(
             self,
@@ -69,7 +70,7 @@ class ASTTransformer:
         if source is None:
             return None
         elif isinstance(source, Iterable):
-            raise Exception("Mapping error: received collection when value was expected")
+            raise Exception(f"Mapping error: received collection when value was expected: {source}")
         factory = self.get_node_factory(type(source))
         if factory:
             node = self.make_node(factory, source)
@@ -77,9 +78,12 @@ class ASTTransformer:
                 return None
             for pd in type(node).node_properties:
                 child_key = type(node).__qualname__ + "#" + pd.name
-                child_node_factory = factory.children[child_key]
-                if not child_node_factory:
+                if child_key in factory.children:
+                    child_node_factory = factory.children[child_key]
+                elif pd.name in factory.children:
                     child_node_factory = factory.children[pd.name]
+                else:
+                    child_node_factory = None
                 if child_node_factory:
                     if child_node_factory != NO_CHILD_NODE:
                         self.set_child(child_node_factory, source, node, pd)
@@ -139,3 +143,26 @@ class ASTTransformer:
                 factory = self.get_node_factory(superclass)
                 if factory:
                     return factory
+
+    def register_node_factory(
+            self, source: Type[Source], factory: Union[node_factory_constructor_type, Type[Target]]
+    ) -> NodeFactory[Source, Target]:
+        if isinstance(factory, type):
+            node_factory = NodeFactory(lambda _, __, ___: factory())
+        else:
+            node_factory = NodeFactory(factory)
+        self.factories[source] = node_factory
+        return node_factory
+
+    def register_identity_transformation(self, node_class: Type[Target]):
+        self.register_node_factory(node_class, lambda node: node)
+
+
+def node_property(name: str, node_type: Type[Node]):
+    def pget(node: node_type):
+        return getattr(node, name)
+
+    def pset(node: node_type, value):
+        return setattr(node, name, value)
+
+    return pget, pset

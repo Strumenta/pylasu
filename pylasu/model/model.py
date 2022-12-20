@@ -6,6 +6,7 @@ from typing import Optional, Callable, List
 
 from .position import Position, Source
 from ..reflection import getannotations
+from ..reflection.reflection import is_sequence_type, get_type_arguments
 
 
 class internal_property(property):
@@ -88,6 +89,10 @@ class PropertyDescriptor:
         return self.multiplicity == Multiplicity.MANY
 
 
+def provides_nodes(decl_type):
+    return isinstance(decl_type, type) and issubclass(decl_type, Node)
+
+
 class Concept(ABCMeta):
 
     def __init__(cls, what, bases=None, dict=None):
@@ -100,11 +105,19 @@ class Concept(ABCMeta):
         names = set()
         for name in anns:
             if name not in names and cls.is_node_property(name):
-                provides_nodes = False
+                is_child_property = False
+                multiplicity = Multiplicity.SINGULAR
                 if name in anns:
-                    provides_nodes = isinstance(anns[name], type) and issubclass(anns[name], Node)
+                    decl_type = anns[name]
+                    if is_sequence_type(decl_type):
+                        multiplicity = Multiplicity.MANY
+                        type_args = get_type_arguments(decl_type)
+                        if len(type_args) == 1:
+                            is_child_property = provides_nodes(type_args[0])
+                    else:
+                        is_child_property = provides_nodes(decl_type)
                 names.add(name)
-                yield PropertyDescriptor(name, provides_nodes)
+                yield PropertyDescriptor(name, is_child_property, multiplicity)
         for name in dir(cls):
             if name not in names and cls.is_node_property(name):
                 names.add(name)
