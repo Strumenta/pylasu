@@ -1,4 +1,6 @@
+import functools
 from dataclasses import dataclass, field
+from inspect import signature
 from typing import Any, Dict, Callable, TypeVar, Generic, Optional, List, Set, Iterable, Type, Union
 
 from pylasu.model import Node, Origin
@@ -155,9 +157,8 @@ class ASTTransformer:
                 raise e
 
     def get_node_factory(self, node_type: Type[Source]) -> Optional[NodeFactory[Source, Target]]:
-        factory = self.factories[node_type]
-        if factory:
-            return factory
+        if node_type in self.factories:
+            return self.factories[node_type]
         else:
             for superclass in node_type.__mro__:
                 factory = self.get_node_factory(superclass)
@@ -170,9 +171,51 @@ class ASTTransformer:
         if isinstance(factory, type):
             node_factory = NodeFactory(lambda _, __, ___: factory())
         else:
-            node_factory = NodeFactory(factory)
+            node_factory = NodeFactory(get_node_constructor_wrapper(factory))
         self.factories[source] = node_factory
         return node_factory
 
     def register_identity_transformation(self, node_class: Type[Target]):
         self.register_node_factory(node_class, lambda node: node)
+
+
+def get_node_constructor_wrapper(decorated_function):
+    try:
+        sig = signature(decorated_function)
+        try:
+            sig.bind(1, 2, 3)
+            wrapper = decorated_function
+        except TypeError:
+            try:
+                sig.bind(1, 2)
+
+                def wrapper(node: Node, parent: Node, _):
+                    return decorated_function(node, parent)
+            except TypeError:
+                sig.bind(1)
+
+                def wrapper(node: Node, _, __):
+                    return decorated_function(node)
+    except ValueError:
+        wrapper = decorated_function
+
+    functools.update_wrapper(wrapper, decorated_function)
+    return wrapper
+
+
+def ast_transformer(
+        node_class: Type[Node],
+        transformer: ASTTransformer,
+        method_name: str = None):
+    """Decorator to register a function as an AST transformer"""
+    def decorator(decorated_function):
+        if method_name:
+            def transformer_method(self, parent: Optional[Node] = None):
+                return transformer.transform(self, parent)
+            setattr(node_class, method_name, transformer_method)
+        if transformer:
+            return transformer.register_node_factory(node_class, decorated_function).constructor
+        else:
+            return get_node_constructor_wrapper(decorated_function)
+
+    return decorator
