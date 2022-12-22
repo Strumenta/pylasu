@@ -189,8 +189,8 @@ def get_node_constructor_wrapper(decorated_function):
             try:
                 sig.bind(1, 2)
 
-                def wrapper(node: Node, parent: Node, _):
-                    return decorated_function(node, parent)
+                def wrapper(node: Node, transformer: ASTTransformer, _):
+                    return decorated_function(node, transformer)
             except TypeError:
                 sig.bind(1)
 
@@ -210,7 +210,7 @@ def ast_transformer(
     """Decorator to register a function as an AST transformer"""
     def decorator(decorated_function):
         if method_name:
-            def transformer_method(self, parent: Optional[Node] = None):
+            def transformer_method(self, parent: Optional[Node] = None, transformer: ASTTransformer = transformer):
                 return transformer.transform(self, parent)
             setattr(node_class, method_name, transformer_method)
         if transformer:
