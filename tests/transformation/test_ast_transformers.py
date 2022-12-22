@@ -23,7 +23,6 @@ class SetStatement(Node):
     value: int = 0
 
 
-
 class Operator(enum.Enum):
     PLUS = '+'
     MULT = '*'
