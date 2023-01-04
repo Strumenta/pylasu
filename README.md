@@ -19,6 +19,8 @@ flake8 . && flake8 tests
 
 ## Packaging and distributing
 
+Update version in pyproject.toml, setup.cfg and setup.py _(TODO do we need all three?)_, then run:
+
 ```shell
 python -m build
 python -m twine upload dist/*
