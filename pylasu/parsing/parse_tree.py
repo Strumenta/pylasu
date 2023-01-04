@@ -132,12 +132,6 @@ def make_ast_node_or_value(parse_tree_node, prev_node, ns, parent: Node, source:
     ast_node_type_name = ast_node_name(type(parse_tree_node).__name__)
     if ast_node_type_name in ns:
         ast_node = ns[ast_node_type_name].from_parse_tree(parse_tree_node, parent, source)
-        if isinstance(parent.origin, ParseTreeOrigin):
-            if prev_node is not None and prev_node.to_position() is not None:
-                a = stop_token(prev_node).stop
-                b = start_token(parse_tree_node).start
-                if a < b:
-                    ast_node.syntax_before = parent.origin.parse_tree.start.getInputStream().getText(a + 1, b)
         return ast_node
     else:
         return parse_tree_node.getText()
