@@ -22,6 +22,13 @@ flake8 . && flake8 tests
 Update version in pyproject.toml, setup.cfg and setup.py _(TODO do we need all three?)_, then run:
 
 ```shell
+rm dist/*
 python -m build
 python -m twine upload dist/*
+```
+
+If all goes well, tag the release:
+
+```shell
+git tag 
 ```
