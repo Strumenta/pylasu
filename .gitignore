@@ -11,3 +11,4 @@ pyvenv.cfg
 .eggs/
 __pycache__
 /.token
+/antlr-*.jar

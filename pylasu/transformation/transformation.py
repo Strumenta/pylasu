@@ -79,8 +79,8 @@ class ASTTransformer:
     "Factories that map from source tree node to target tree node."
     known_classes: Dict[str, Set[type]]
 
-    def __init__(self, allow_generic_node: bool = True):
-        self.issues = []
+    def __init__(self, issues: List[Issue] = None, allow_generic_node: bool = True):
+        self.issues = issues or []
         self.allow_generic_node = allow_generic_node
         self.factories = dict()
         self.known_classes = dict()
@@ -109,7 +109,7 @@ class ASTTransformer:
                         IssueSeverity.INFO,
                         origin.position if origin else None))
             else:
-                raise Exception(f"Unable to translate node {source} (${type(source)})")
+                raise Exception(f"Unable to transform node {source} (${type(source)})")
         return node
 
     def process_child(self, source, node, pd, factory):
@@ -160,7 +160,7 @@ class ASTTransformer:
         if node_type in self.factories:
             return self.factories[node_type]
         else:
-            for superclass in node_type.__mro__:
+            for superclass in node_type.__mro__[1:]:
                 factory = self.get_node_factory(superclass)
                 if factory:
                     return factory

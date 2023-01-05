@@ -73,8 +73,11 @@ def get_original_text(self: ParserRuleContext) -> str:
 
 
 @extension_method(Node)
-def with_parse_tree(self: Node, tree: ParseTree, source: Source = None):
-    self.origin = ParseTreeOrigin(parse_tree=tree, source=source)
+def with_parse_tree(self: Node, parse_tree: Optional[ParseTree], source: Source = None):
+    """Set the origin of the AST node as a ParseTreeOrigin, providing the parse_tree is not None.
+If the parse_tree is None, no operation is performed."""
+    if parse_tree:
+        self.origin = ParseTreeOrigin(parse_tree=parse_tree, source=source)
     return self
 
 

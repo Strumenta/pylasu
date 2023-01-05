@@ -30,8 +30,11 @@ jobs:
           # stop the build if there are Python style violations
           flake8 . --count --show-source --statistics
           flake8 tests --config tests/.flake8 --count --show-source --statistics
-      - name: Generate test parser
-        run: java -cp ../antlr-4.10.1-complete.jar org.antlr.v4.Tool -Dlanguage=Python3 -visitor -o simple_lang SimpleLangLexer.g4 SimpleLangParser.g4
+      - name: Generate test parsers
+        run: |
+          java -cp ../antlr-4.10.1-complete.jar org.antlr.v4.Tool -Dlanguage=Python3 -visitor -o simple_lang SimpleLangLexer.g4 SimpleLangParser.g4
+          java -cp ../antlr-4.10.1-complete.jar org.antlr.v4.Tool -Dlanguage=Python3 -visitor -o antlr_entity AntlrEntityLexer.g4 AntlrEntityParser.g4
+          java -cp ../antlr-4.10.1-complete.jar org.antlr.v4.Tool -Dlanguage=Python3 -visitor -o antlr_script AntlrScriptLexer.g4 AntlrScriptParser.g4
         working-directory: tests
       - name: Test with pytest
         run: |
