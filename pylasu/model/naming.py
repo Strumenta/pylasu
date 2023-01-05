@@ -2,8 +2,12 @@ from dataclasses import dataclass, field
 from typing import TypeVar, Generic, Optional, List, Dict
 
 
+@dataclass
 class PossiblyNamed:
-    name: str = field(default=None)
+    name: str
+
+    def __init__(self, name: str = None):
+        self.name = name
 
 
 @dataclass

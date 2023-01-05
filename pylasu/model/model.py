@@ -101,10 +101,16 @@ class Concept(ABCMeta):
 
     @property
     def node_properties(cls):
-        anns = getannotations(cls)
         names = set()
+        for cl in cls.__mro__:
+            yield from cls._direct_node_properties(cl, names)
+
+    def _direct_node_properties(cls, cl, known_property_names):
+        anns = getannotations(cl)
+        if not anns:
+            return
         for name in anns:
-            if name not in names and cls.is_node_property(name):
+            if name not in known_property_names and cls.is_node_property(name):
                 is_child_property = False
                 multiplicity = Multiplicity.SINGULAR
                 if name in anns:
@@ -116,11 +122,11 @@ class Concept(ABCMeta):
                             is_child_property = provides_nodes(type_args[0])
                     else:
                         is_child_property = provides_nodes(decl_type)
-                names.add(name)
+                known_property_names.add(name)
                 yield PropertyDescriptor(name, is_child_property, multiplicity)
-        for name in dir(cls):
-            if name not in names and cls.is_node_property(name):
-                names.add(name)
+        for name in dir(cl):
+            if name not in known_property_names and cls.is_node_property(name):
+                known_property_names.add(name)
                 yield PropertyDescriptor(name, False)
 
     def is_node_property(cls, name):
