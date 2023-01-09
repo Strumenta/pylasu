@@ -88,6 +88,77 @@ class ASTTransformerTest(unittest.TestCase):
         t1 = my_transformer.transform(source)
         self.assertEqual(t1, source.to_ast())
 
+    def test_translate_across_languages(self):
+        transformer = ASTTransformer(allow_generic_node=False)
+        transformer.register_node_factory(ALangIntLiteral, lambda source: BLangIntLiteral(source.value))
+        transformer.register_node_factory(
+            ALangSum,
+            lambda source: BLangSum(transformer.transform(source.left), transformer.transform(source.right)))
+        transformer.register_node_factory(
+            ALangMult,
+            lambda source: BLangMult(transformer.transform(source.left), transformer.transform(source.right)))
+        self.assertEqual(
+            BLangMult(
+                BLangSum(
+                    BLangIntLiteral(1),
+                    BLangMult(BLangIntLiteral(2), BLangIntLiteral(3))
+                ),
+                BLangIntLiteral(4)
+            ),
+            transformer.transform(
+                ALangMult(
+                    ALangSum(
+                        ALangIntLiteral(1),
+                        ALangMult(ALangIntLiteral(2), ALangIntLiteral(3))
+                    ),
+                    ALangIntLiteral(4))))
+
+
+@dataclass
+class ALangExpression(Node):
+    pass
+
+
+@dataclass
+class ALangIntLiteral(ALangExpression):
+    value: int
+
+
+@dataclass
+class ALangSum(ALangExpression):
+    left: ALangExpression
+    right: ALangExpression
+
+
+
+@dataclass
+class ALangMult(ALangExpression):
+    left: ALangExpression
+    right: ALangExpression
+
+
+@dataclass
+class BLangExpression(Node):
+    pass
+
+
+@dataclass
+class BLangIntLiteral(BLangExpression):
+    value: int
+
+
+@dataclass
+class BLangSum(BLangExpression):
+    left: BLangExpression
+    right: BLangExpression
+
+
+
+@dataclass
+class BLangMult(BLangExpression):
+    left: BLangExpression
+    right: BLangExpression
+
 
 if __name__ == '__main__':
     unittest.main()
