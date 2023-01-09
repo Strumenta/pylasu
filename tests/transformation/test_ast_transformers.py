@@ -69,7 +69,6 @@ class ASTTransformerTest(unittest.TestCase):
                 DisplayIntStatement(value=456)])
         transformed_cu = transformer.transform(cu)
         self.assertEqual(cu, transformed_cu)
-        # assertTrue { transformed_cu.hasValidParents() }
         self.assertEquals(transformed_cu.origin, cu)
 
     def test_translate_binary_expression(self):
