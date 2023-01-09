@@ -130,7 +130,6 @@ class ALangSum(ALangExpression):
     right: ALangExpression
 
 
-
 @dataclass
 class ALangMult(ALangExpression):
     left: ALangExpression
@@ -151,7 +150,6 @@ class BLangIntLiteral(BLangExpression):
 class BLangSum(BLangExpression):
     left: BLangExpression
     right: BLangExpression
-
 
 
 @dataclass

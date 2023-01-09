@@ -91,14 +91,13 @@ module M {
         actual_ast = transformer.transform(
             self.parse_entities("""
             module M {
-               entity FOO {
+              entity FOO {
                 A: string;
                 B: boolean;
-                 
-               }
-               entity BAR {
-                 C: FOO;
-               }
+              }
+              entity BAR {
+                C: FOO;
+              }
             }"""))
         self.assertEqual(expected_ast, actual_ast)
 
