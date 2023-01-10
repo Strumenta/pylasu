@@ -32,3 +32,25 @@ If all goes well, tag the release:
 ```shell
 git tag 
 ```
+
+### Extracting Documentation
+
+Here's how to extract the documentation into HTML using Sphinx, the most popular documentation generator for Python.
+
+First, ensure you have Sphinx and the chosen theme installed:
+```shell
+pip install sphinx sphinx_rtd_theme
+```
+
+Then, extract the documentation from the source code:
+```shell
+sphinx-apidoc -o docs pylasu
+```
+
+Finally, change into the docs directory and launch the build process:
+```shell
+cd docs
+make html
+```
+
+If everything goes as it should, in `docs/_build/html` you'll find the generated documentation.
