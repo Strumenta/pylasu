@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/Strumenta/pylasu/actions/workflows/pythonapp.yml/badge.svg)](https://github.com/Strumenta/pylasu/actions/workflows/pythonapp.yml)
 [![PyPI](https://img.shields.io/pypi/v/pylasu.svg)](https://pypi.org/project/pylasu)
 
-Pylasu is an AST Library in the [StarLasu](https://github.com/Strumenta/StarLasu) family, targeting the Python language.
+Pylasu is an AST Library in the [StarLasu](https://github.com/Strumenta/StarLasu) family, targeting the Python language. [Documentation](https://pylasu.readthedocs.io) is on Read the Docs.
 
 ## Testing
 
