@@ -1,7 +1,9 @@
 import dataclasses
 import unittest
+from typing import List
 
 from pylasu.model import Node, Position, Point
+from pylasu.model.model import Multiplicity
 from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
 
 
@@ -9,6 +11,8 @@ from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
 class SomeNode(Node, Named):
     foo = 3
     __private__ = 4
+    ref: Node = None
+    multiple: List[Node] = dataclasses.field(default_factory=list)
 
     def __post_init__(self):
         self.bar = 5
@@ -57,11 +61,11 @@ class ModelTest(unittest.TestCase):
     def test_node_with_position(self):
         node = Node().with_position(Position(Point(1, 0), Point(2, 1)))
         self.assertEqual(Position(Point(1, 0), Point(2, 1)), node.position)
-        node = SomeNode().with_position(Position(Point(1, 0), Point(2, 1)))
+        node = SomeNode("").with_position(Position(Point(1, 0), Point(2, 1)))
         self.assertEqual(Position(Point(1, 0), Point(2, 1)), node.position)
 
     def test_node_properties(self):
-        node = SomeNode().with_position(Position(Point(1, 0), Point(2, 1)))
+        node = SomeNode("n").with_position(Position(Point(1, 0), Point(2, 1)))
         self.assertIsNotNone(next(n for n, _ in node.properties if n == 'foo'))
         self.assertIsNotNone(next(n for n, _ in node.properties if n == 'bar'))
         self.assertIsNotNone(next(n for n, _ in node.properties if n == "name"))
@@ -130,3 +134,16 @@ class ModelTest(unittest.TestCase):
                       parent=Scope(symbols={'a': [SomeSymbol(name='a', index=1)]}))
         result = scope.lookup(symbol_name='a', symbol_type=AnotherSymbol)
         self.assertIsNone(result)
+
+    def test_node_properties_meta(self):
+        pds = [pd for pd in sorted(SomeNode.node_properties, key=lambda x: x.name)]
+        self.assertEqual(4, len(pds))
+        self.assertEqual("foo", pds[0].name)
+        self.assertFalse(pds[0].provides_nodes)
+        self.assertEqual("multiple", pds[1].name)
+        self.assertTrue(pds[1].provides_nodes)
+        self.assertEqual(Multiplicity.MANY, pds[1].multiplicity)
+        self.assertEqual("name", pds[2].name)
+        self.assertFalse(pds[2].provides_nodes)
+        self.assertEqual("ref", pds[3].name)
+        self.assertTrue(pds[3].provides_nodes)

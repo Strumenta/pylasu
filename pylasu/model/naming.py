@@ -4,14 +4,15 @@ from typing import TypeVar, Generic, Optional, List, Dict
 
 @dataclass
 class PossiblyNamed:
-    name: str = field(default=None)
+    name: str
+
+    def __init__(self, name: str = None):
+        self.name = name
 
 
 @dataclass
 class Named(PossiblyNamed):
-    def __post_init__(self):
-        if self.name is None:
-            raise TypeError("missing 1 required positional argument: 'name'")
+    name: str
 
 
 T = TypeVar("T", bound=PossiblyNamed)
