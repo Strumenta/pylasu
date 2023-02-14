@@ -6,7 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
-        python: [ '3.6', '3.7', '3.8', '3.9', '3.10']
+        python: [ '3.7', '3.8', '3.9', '3.10' ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -24,20 +24,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r Requirements.txt
           curl -O https://www.antlr.org/download/antlr-4.10.1-complete.jar
-      - name: Install additional dependencies for Python 3.6
-        if: matrix.python == '3.6'
-        run: |
-          pip install -r Requirements-3.6.txt
       - name: Lint with flake8
         run: |
           pip install flake8
           # stop the build if there are Python style violations
           flake8 . --count --show-source --statistics
           flake8 tests --config tests/.flake8 --count --show-source --statistics
-      - name: Generate test parser
-        run: java -cp ../antlr-4.10.1-complete.jar org.antlr.v4.Tool -Dlanguage=Python3 -visitor -o simple_lang SimpleLangLexer.g4 SimpleLangParser.g4
+      - name: Generate test parsers
+        run: ./generate-test-parsers.sh
         working-directory: tests
       - name: Test with pytest
         run: |
-          pip install pytest pytest-cov pyecore
+          pip install pytest pytest-cov pyecore==0.12.2
           pytest --cov=pylasu --cov-fail-under=40 tests

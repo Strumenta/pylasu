@@ -1,2 +1,4 @@
+antlr_entity/
+antlr_script/
 simple_lang/
 *.tokens

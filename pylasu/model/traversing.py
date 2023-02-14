@@ -44,6 +44,7 @@ def walk_ancestors(self: Node):
 @extension_method(Node)
 def walk_descendants(self: Node, walker=walk, restrict_to=Node):
     """Walks the whole AST starting from the child nodes of this node.
+
     :param self: the node from which to start the walk, which is NOT included in the walk.
     :param walker: a function that generates a sequence of nodes. By default this is the depth-first "walk" method.
     For post-order traversal, use "walk_leaves_first".

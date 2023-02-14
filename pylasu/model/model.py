@@ -1,9 +1,12 @@
+import enum
 import inspect
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, ABCMeta
 from dataclasses import Field, MISSING, dataclass, field
 from typing import Optional, Callable, List
 
 from .position import Position, Source
+from ..reflection import getannotations
+from ..reflection.reflection import is_sequence_type, get_type_arguments
 
 
 class internal_property(property):
@@ -70,12 +73,73 @@ def is_internal_property_or_method(value):
     return isinstance(value, internal_property) or isinstance(value, InternalField) or isinstance(value, Callable)
 
 
-class Node(Origin, Destination):
+class Multiplicity(enum.Enum):
+    OPTIONAL = 0
+    SINGULAR = 1
+    MANY = 2
+
+
+@dataclass
+class PropertyDescriptor:
+    name: str
+    provides_nodes: bool
+    multiplicity: Multiplicity = Multiplicity.SINGULAR
+
+    def multiple(self):
+        return self.multiplicity == Multiplicity.MANY
+
+
+def provides_nodes(decl_type):
+    return isinstance(decl_type, type) and issubclass(decl_type, Node)
+
+
+class Concept(ABCMeta):
+
+    def __init__(cls, what, bases=None, dict=None):
+        super().__init__(what, bases, dict)
+        cls.__internal_properties__ = ["origin", "destination", "parent", "position", "position_override"]
+
+    @property
+    def node_properties(cls):
+        names = set()
+        for cl in cls.__mro__:
+            yield from cls._direct_node_properties(cl, names)
+
+    def _direct_node_properties(cls, cl, known_property_names):
+        anns = getannotations(cl)
+        if not anns:
+            return
+        for name in anns:
+            if name not in known_property_names and cls.is_node_property(name):
+                is_child_property = False
+                multiplicity = Multiplicity.SINGULAR
+                if name in anns:
+                    decl_type = anns[name]
+                    if is_sequence_type(decl_type):
+                        multiplicity = Multiplicity.MANY
+                        type_args = get_type_arguments(decl_type)
+                        if len(type_args) == 1:
+                            is_child_property = provides_nodes(type_args[0])
+                    else:
+                        is_child_property = provides_nodes(decl_type)
+                known_property_names.add(name)
+                yield PropertyDescriptor(name, is_child_property, multiplicity)
+        for name in dir(cl):
+            if name not in known_property_names and cls.is_node_property(name):
+                known_property_names.add(name)
+                yield PropertyDescriptor(name, False)
+
+    def is_node_property(cls, name):
+        return not name.startswith('_') \
+            and name not in cls.__internal_properties__ \
+            and name not in [n for n, v in inspect.getmembers(cls, is_internal_property_or_method)]
+
+
+class Node(Origin, Destination, metaclass=Concept):
     origin: Optional[Origin] = None
     destination: Optional[Destination] = None
     parent: Optional["Node"] = None
     position_override: Optional[Position] = None
-    __internal_properties__ = ["origin", "destination", "parent", "position", "position_override"]
 
     def __init__(self, origin: Optional[Origin] = None, parent: Optional["Node"] = None,
                  position_override: Optional[Position] = None):
