@@ -124,7 +124,7 @@ class MetamodelBuilder:
     def setup_attributes(self, cls):
         anns = getannotations(cls)
         nmspc = {
-            "position": EReference("position", starlasu.Position, containment=True)
+            # "position": EReference("position", starlasu.Position, containment=True)
         }
         for attr in anns if anns else []:
             if attr.startswith('_'):

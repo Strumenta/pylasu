@@ -4,6 +4,14 @@ from typing import List
 from pylasu.model import Node, pos
 
 
+class One:
+    pass
+
+
+class Two(One):
+    pass
+
+
 @dataclass
 class Box(Node):
     name: str = None

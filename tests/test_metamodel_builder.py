@@ -4,12 +4,13 @@ from io import BytesIO, IOBase
 
 from pyecore.ecore import EObject, EPackage, EEnum, EMetaclass, EAttribute, EString
 from pyecore.resources import URI
+from pyecore.resources import ResourceSet
+from pyecore.resources.json import JsonResource as BaseJsonResource
 
 from pylasu.StrumentaLanguageSupport import ASTNode
 from pylasu.emf import MetamodelBuilder
 from pylasu.playground import JsonResource
-from tests.fixtures import Box, ReinforcedBox
-
+from tests.fixtures import Box, ReinforcedBox, Two
 
 eClass = EPackage('test', nsURI='http://test/1.0', nsPrefix='test')
 nsURI = 'http://test/1.0'
@@ -17,6 +18,14 @@ nsPrefix = 'test'
 
 BookCategory = EEnum('BookCategory', literals=['ScienceFiction', 'Biographie', 'Mistery'])
 eClass.eClassifiers.append(BookCategory)
+
+
+class TestJsonResource(BaseJsonResource):
+    def open_out_stream(self, other=None):
+        if isinstance(other, IOBase):
+            return other
+        else:
+            return super().open_out_stream(other)
 
 
 @EMetaclass
@@ -27,18 +36,7 @@ class A(object):
 
 class MetamodelBuilderTest(unittest.TestCase):
     def test_pyecore_enum(self):
-        from pyecore.resources import ResourceSet
-        from pyecore.resources.json import JsonResource as BaseJsonResource
-
-        class TestJsonResource(BaseJsonResource):
-            def open_out_stream(self, other=None):
-                if isinstance(other, IOBase):
-                    return other
-                else:
-                    return super().open_out_stream(other)
-
-        rset = ResourceSet()
-        rset.resource_factory['json'] = lambda uri: TestJsonResource(uri=uri, indent=2)
+        rset = self.make_resource_set()
         resource = rset.create_resource('ZMM.json')
         resource.append(eClass)
         with BytesIO() as out:
@@ -84,6 +82,11 @@ class MetamodelBuilderTest(unittest.TestCase):
   ]
 }'''))
 
+    def make_resource_set(self):
+        rset = ResourceSet()
+        rset.resource_factory['json'] = lambda uri: TestJsonResource(uri=uri, indent=2)
+        return rset
+
     def test_can_serialize_starlasu_model(self):
         starlasu_package = ASTNode.eClass.ePackage
         resource = JsonResource(URI(starlasu_package.nsURI))
@@ -92,8 +95,31 @@ class MetamodelBuilderTest(unittest.TestCase):
             resource.save(out)
             starlasu_model = json.loads(STARLASU_MODEL_JSON)
             serialized_model = json.loads(out.getvalue().decode('utf-8'))
-            self.maxDiff = None
             self.assertDictEqual(serialized_model, starlasu_model)
+
+    def test_build_metamodel_single_package_no_starlasu(self):
+        mb = MetamodelBuilder("tests.fixtures", "https://strumenta.com/pylasu/test/fixtures")
+        two = mb.provide_class(Two)
+        self.assertIsInstance(two(), EObject)
+        self.assertEqual(two.eClass.ePackage, mb.package)
+        self.assertTrue(two.eClass in mb.package.eContents)
+        self.assertEqual(0, len(two.eClass.eAllAttributes()))
+
+        rset = self.make_resource_set()
+        resource = rset.create_resource('no_starlasu_mm.json')
+        resource.contents.append(mb.generate())
+        with BytesIO() as out:
+            resource.save(out)
+            self.assertEqual(json.loads('''{"eClass": "http://www.eclipse.org/emf/2002/Ecore#//EPackage",
+ "eClassifiers": [{"eClass": "http://www.eclipse.org/emf/2002/Ecore#//EClass",
+                   "name": "One"},
+                  {"eClass": "http://www.eclipse.org/emf/2002/Ecore#//EClass",
+                   "eSuperTypes": [{"$ref": "#//One",
+                                    "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EClass"}],
+                   "name": "Two"}],
+ "name": "tests.fixtures",
+ "nsURI": "https://strumenta.com/pylasu/test/fixtures"}'''),
+                             json.loads(out.getvalue().decode("utf-8")))
 
     def test_build_metamodel_single_package(self):
         mb = MetamodelBuilder("tests.fixtures", "https://strumenta.com/pylasu/test/fixtures")
