@@ -5,7 +5,7 @@ from dataclasses import is_dataclass, fields
 from pyecore.ecore import EAttribute, ECollection, EObject, EPackage, EReference, MetaEClass, EBoolean, EString, EInt, \
     EEnum
 from pyecore.resources import Resource
-from pylasu import StrumentaLanguageSupport as starlasu
+
 from pylasu.StrumentaLanguageSupport import ASTNode
 from pylasu.emf.model import find_eclassifier
 from pylasu.model import Node
