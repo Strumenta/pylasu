@@ -37,7 +37,7 @@ class A(object):
 class MetamodelBuilderTest(unittest.TestCase):
     def test_pyecore_enum(self):
         rset = self.make_resource_set()
-        resource = rset.create_resource('ZMM.json')
+        resource = rset.create_resource(URI('ZMM.json'))
         resource.append(eClass)
         with BytesIO() as out:
             resource.save(out)
@@ -90,7 +90,7 @@ class MetamodelBuilderTest(unittest.TestCase):
     def test_can_serialize_starlasu_model(self):
         starlasu_package = ASTNode.eClass.ePackage
         resource = JsonResource(URI(starlasu_package.nsURI))
-        resource.contents.append(starlasu_package)
+        resource.append(starlasu_package)
         with BytesIO() as out:
             resource.save(out)
             starlasu_model = json.loads(STARLASU_MODEL_JSON)
@@ -106,8 +106,8 @@ class MetamodelBuilderTest(unittest.TestCase):
         self.assertEqual(0, len(two.eClass.eAllAttributes()))
 
         rset = self.make_resource_set()
-        resource = rset.create_resource('no_starlasu_mm.json')
-        resource.contents.append(mb.generate())
+        resource = rset.create_resource(URI('no_starlasu_mm.json'))
+        resource.append(mb.generate())
         with BytesIO() as out:
             resource.save(out)
             self.assertEqual(json.loads('''{"eClass": "http://www.eclipse.org/emf/2002/Ecore#//EPackage",

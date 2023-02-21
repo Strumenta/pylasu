@@ -1,2 +1,2 @@
 antlr4-python3-runtime==4.10
-pyecore==0.13.0; extra == 'ecore'
+pyecore==0.13.1; extra == 'ecore'
