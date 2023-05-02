@@ -1,1 +1,1 @@
-from .validation import Issue, IssueSeverity, IssueType
+from .validation import Issue, IssueSeverity, IssueType, Result
