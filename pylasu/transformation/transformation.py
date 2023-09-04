@@ -13,7 +13,8 @@ Child = TypeVar('Child')
 Output = TypeVar('Output', bound=Node)
 Source = TypeVar('Source')
 Target = TypeVar('Target')
-node_factory_constructor_type = Callable[[Source, "ASTTransformer", "NodeFactory[Source, Output]"], Optional[Output]]
+node_factory_constructor_type = Callable[[Source, "ASTTransformer", "NodeFactory[Source, Output]"], List[Output]]
+node_factory_single_constructor_type = Callable[[Source, "ASTTransformer", "NodeFactory[Source, Output]"], Output]
 
 
 @dataclass
@@ -86,23 +87,32 @@ class ASTTransformer:
         self.known_classes = dict()
 
     def transform(self, source: Optional[Any], parent: Optional[Node] = None) -> Optional[Node]:
-        if source is None:
+        result = self.transform_into_nodes(source, parent)
+        if len(result) == 0:
             return None
+        elif len(result) == 1:
+            return result[0]
+        else:
+            raise Exception(f"Cannot transform {source} into a single Node as multiple nodes where produced")
+
+    def transform_into_nodes(self, source: Optional[Any], parent: Optional[Node] = None) -> List[Node]:
+        if source is None:
+            return []
         elif isinstance(source, Iterable):
             raise Exception(f"Mapping error: received collection when value was expected: {source}")
         factory = self.get_node_factory(type(source))
         if factory:
-            node = self.make_node(factory, source)
-            if not node:
-                return None
-            for pd in type(node).node_properties:
-                self.process_child(source, node, pd, factory)
-            factory.finalizer(node)
-            node.parent = parent
+            nodes = self.make_nodes(factory, source)
+            for node in nodes:
+                for pd in type(node).node_properties:
+                    self.process_child(source, node, pd, factory)
+                factory.finalizer(node)
+                node.parent = parent
+
         else:
             if self.allow_generic_node:
                 origin = self.as_origin(source)
-                node = GenericNode(parent).with_origin(origin)
+                nodes = [GenericNode(parent).with_origin(origin)]
                 self.issues.append(
                     Issue.semantic(
                         f"Source node not mapped: {type(source).__qualname__}",
@@ -110,7 +120,7 @@ class ASTTransformer:
                         origin.position if origin else None))
             else:
                 raise Exception(f"Unable to transform node {source} (${type(source)})")
-        return node
+        return nodes
 
     def process_child(self, source, node, pd, factory):
         child_key = type(node).__qualname__ + "#" + pd.name
@@ -144,15 +154,16 @@ class ASTTransformer:
     def get_source(self, node: Node, source: Any) -> Any:
         return source
 
-    def make_node(self, factory: NodeFactory[Source, Target], source: Source) -> Optional[Node]:
+    def make_nodes(self, factory: NodeFactory[Source, Target], source: Source) -> List[Node]:
         try:
-            node = factory.constructor(source, self, factory)
-            if node:
-                node = node.with_origin(self.as_origin(source))
-            return node
+            nodes = factory.constructor(source, self, factory)
+            for node in nodes:
+                if node.origin is None:
+                    node.with_origin(self.as_origin(source))
+            return nodes
         except Exception as e:
             if self.allow_generic_node:
-                return GenericErrorNode(error=e).with_origin(self.as_origin(source))
+                return [GenericErrorNode(error=e).with_origin(self.as_origin(source))]
             else:
                 raise e
 
@@ -166,10 +177,11 @@ class ASTTransformer:
                     return factory
 
     def register_node_factory(
-            self, source: Type[Source], factory: Union[node_factory_constructor_type, Type[Target]]
+            self, source: Type[Source],
+            factory: Union[node_factory_constructor_type, node_factory_single_constructor_type, Type[Target]]
     ) -> NodeFactory[Source, Target]:
         if isinstance(factory, type):
-            node_factory = NodeFactory(lambda _, __, ___: factory())
+            node_factory = NodeFactory(lambda _, __, ___: [factory()])
         else:
             node_factory = NodeFactory(get_node_constructor_wrapper(factory))
         self.factories[source] = node_factory
@@ -180,24 +192,33 @@ class ASTTransformer:
 
 
 def get_node_constructor_wrapper(decorated_function):
+    def ensure_list(obj):
+        if isinstance(obj, list):
+            return obj
+        else:
+            return [obj]
+
     try:
         sig = signature(decorated_function)
         try:
             sig.bind(1, 2, 3)
-            wrapper = decorated_function
+
+            def wrapper(node: Node, transformer: ASTTransformer, factory):
+                return ensure_list(decorated_function(node, transformer, factory))
         except TypeError:
             try:
                 sig.bind(1, 2)
 
                 def wrapper(node: Node, transformer: ASTTransformer, _):
-                    return decorated_function(node, transformer)
+                    return ensure_list(decorated_function(node, transformer))
             except TypeError:
                 sig.bind(1)
 
                 def wrapper(node: Node, _, __):
-                    return decorated_function(node)
+                    return ensure_list(decorated_function(node))
     except ValueError:
-        wrapper = decorated_function
+        def wrapper(node: Node, transformer: ASTTransformer, factory):
+            return ensure_list(decorated_function(node, transformer, factory))
 
     functools.update_wrapper(wrapper, decorated_function)
     return wrapper

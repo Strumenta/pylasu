@@ -43,7 +43,8 @@ class MetamodelBuilderTest(unittest.TestCase):
         resource.append(eClass)
         with BytesIO() as out:
             resource.save(out)
-            self.assertEqual(json.loads(out.getvalue().decode("utf-8")), json.loads('''{
+            self.assertEqual(
+                json.loads('''{
   "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EPackage",
   "nsPrefix": "test",
   "nsURI": "http://test/1.0",
@@ -82,7 +83,8 @@ class MetamodelBuilderTest(unittest.TestCase):
       "name": "A"
     }
   ]
-}'''))
+}'''),
+                json.loads(out.getvalue().decode("utf-8")))
 
     def test_can_serialize_starlasu_model(self):
         starlasu_package = ASTNode.eClass.ePackage
