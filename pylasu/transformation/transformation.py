@@ -5,7 +5,7 @@ from typing import Any, Dict, Callable, TypeVar, Generic, Optional, List, Set, I
 
 from pylasu.model import Node, Origin
 from pylasu.model.errors import GenericErrorNode
-from pylasu.model.model import PropertyDescriptor
+from pylasu.model.reflection import PropertyDescription
 from pylasu.transformation.generic_nodes import GenericNode
 from pylasu.validation import Issue, IssueSeverity
 
@@ -36,8 +36,8 @@ class NodeFactory(Generic[Source, Output]):
 
     def with_child(
             self,
-            getter: Union[Callable[[Source], Optional[Any]], PropertyRef],
             setter: Union[Callable[[Target, Optional[Child]], None], PropertyRef],
+            getter: Union[Callable[[Source], Optional[Any]], PropertyRef],
             name: Optional[str] = None,
             target_type: Optional[type] = None
     ) -> "NodeFactory[Source, Output]":
@@ -140,10 +140,12 @@ class ASTTransformer:
     def as_origin(self, source: Any) -> Optional[Origin]:
         return source if isinstance(source, Origin) else None
 
-    def set_child(self, child_node_factory: ChildNodeFactory, source: Any, node: Node, pd: PropertyDescriptor):
+    def set_child(self, child_node_factory: ChildNodeFactory, source: Any, node: Node, pd: PropertyDescription):
         src = child_node_factory.get(self.get_source(node, source))
-        if pd.multiple():
-            child = [self.transform(it, node) for it in src or [] if it is not None]
+        if pd.multiple:
+            child = []
+            for child_src in src:
+                child.extend(self.transform_into_nodes(child_src, node))
         else:
             child = self.transform(src, node)
         try:
@@ -191,13 +193,16 @@ class ASTTransformer:
         self.register_node_factory(node_class, lambda node: node)
 
 
-def get_node_constructor_wrapper(decorated_function):
-    def ensure_list(obj):
-        if isinstance(obj, list):
-            return obj
-        else:
-            return [obj]
+def ensure_list(obj):
+    if isinstance(obj, list):
+        return obj
+    elif obj is not None:
+        return [obj]
+    else:
+        return []
 
+
+def get_node_constructor_wrapper(decorated_function):  # noqa C901
     try:
         sig = signature(decorated_function)
         try:

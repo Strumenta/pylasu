@@ -49,8 +49,8 @@ class ParseTreeToASTTransformerTest(unittest.TestCase):
 
     def test_simple_entities_transformer(self):
         transformer = ParseTreeToASTTransformer(allow_generic_node=False)
-        transformer.register_node_factory(AntlrEntityParser.ModuleContext, lambda ctx: EModule(name=ctx.name.text))\
-            .with_child(AntlrEntityParser.ModuleContext.entity, PropertyRef("entities"))
+        transformer.register_node_factory(AntlrEntityParser.ModuleContext, lambda ctx: EModule(name=ctx.name.text)) \
+            .with_child(PropertyRef("entities"), AntlrEntityParser.ModuleContext.entity)
         transformer.register_node_factory(AntlrEntityParser.EntityContext, lambda ctx: EEntity(name=ctx.name.text))
         expected_ast = EModule("M", [EEntity("FOO", []), EEntity("BAR", [])])
         actual_ast = transformer.transform(self.parse_entities("""
@@ -64,11 +64,11 @@ module M {
     def test_entities_with_features_transformer(self):
         transformer = ParseTreeToASTTransformer(allow_generic_node=False)
         transformer.register_node_factory(AntlrEntityParser.ModuleContext, lambda ctx: EModule(name=ctx.name.text)) \
-            .with_child(AntlrEntityParser.ModuleContext.entity, PropertyRef("entities"))
+            .with_child(PropertyRef("entities"), AntlrEntityParser.ModuleContext.entity)
         transformer.register_node_factory(AntlrEntityParser.EntityContext, lambda ctx: EEntity(name=ctx.name.text)) \
-            .with_child(AntlrEntityParser.EntityContext.feature, PropertyRef("features"))
-        transformer.register_node_factory(AntlrEntityParser.FeatureContext, lambda ctx: EFeature(name=ctx.name.text))\
-            .with_child(AntlrEntityParser.FeatureContext.type_spec, PropertyRef("type"))
+            .with_child(PropertyRef("features"), AntlrEntityParser.EntityContext.feature)
+        transformer.register_node_factory(AntlrEntityParser.FeatureContext, lambda ctx: EFeature(name=ctx.name.text)) \
+            .with_child(PropertyRef("type"), AntlrEntityParser.FeatureContext.type_spec)
         transformer.register_node_factory(AntlrEntityParser.Boolean_typeContext, EBooleanType)
         transformer.register_node_factory(AntlrEntityParser.String_typeContext, EStringType)
         transformer.register_node_factory(

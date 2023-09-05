@@ -3,7 +3,7 @@ import unittest
 from typing import List
 
 from pylasu.model import Node, Position, Point
-from pylasu.model.model import Multiplicity
+from pylasu.model.reflection import Multiplicity
 from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
 
 
