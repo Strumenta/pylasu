@@ -40,12 +40,13 @@ def to_eobject(self: Node, resource: Resource, mappings=None):
         raise Exception("Unknown classifier for " + str(type(self)))
     eobject = eclass()
     mappings[id(self)] = eobject
-    for (p, v) in self.properties:
+    for p in self.properties:
+        v = p.value
         ev = translate_value(v, resource, mappings)
         if isinstance(v, list):
-            eobject.eGet(p).extend(ev)
+            eobject.eGet(p.name).extend(ev)
         else:
-            eobject.eSet(p, ev)
+            eobject.eSet(p.name, ev)
     return eobject
 
 
