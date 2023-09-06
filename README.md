@@ -20,7 +20,8 @@ flake8 . && flake8 tests
 
 ## Packaging and distributing
 
-Update version in pyproject.toml, setup.cfg and setup.py _(TODO do we need all three?)_, then run:
+Update version in `pyproject.toml`, `setup.cfg` and `pylasu/__version__.py` _(TODO do we need all three?)_,
+commit and check that CI completes normally. Then run:
 
 ```shell
 rm dist/*
