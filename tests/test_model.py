@@ -3,13 +3,14 @@ import unittest
 from typing import List
 
 from pylasu.model import Node, Position, Point
-from pylasu.model.model import Multiplicity
+from pylasu.model.reflection import Multiplicity
 from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
 
 
 @dataclasses.dataclass
 class SomeNode(Node, Named):
     foo = 3
+    bar: int = dataclasses.field(init=False)
     __private__ = 4
     ref: Node = None
     multiple: List[Node] = dataclasses.field(default_factory=list)
@@ -66,17 +67,17 @@ class ModelTest(unittest.TestCase):
 
     def test_node_properties(self):
         node = SomeNode("n").with_position(Position(Point(1, 0), Point(2, 1)))
-        self.assertIsNotNone(next(n for n, _ in node.properties if n == 'foo'))
-        self.assertIsNotNone(next(n for n, _ in node.properties if n == 'bar'))
-        self.assertIsNotNone(next(n for n, _ in node.properties if n == "name"))
+        self.assertIsNotNone(next(n for n in node.properties if n.name == 'foo'))
+        self.assertIsNotNone(next(n for n in node.properties if n.name == 'bar'))
+        self.assertIsNotNone(next(n for n in node.properties if n.name == "name"))
         with self.assertRaises(StopIteration):
-            next(n for n, _ in node.properties if n == '__private__')
+            next(n for n in node.properties if n.name == '__private__')
         with self.assertRaises(StopIteration):
-            next(n for n, _ in node.properties if n == 'non_existent')
+            next(n for n in node.properties if n.name == 'non_existent')
         with self.assertRaises(StopIteration):
-            next(n for n, _ in node.properties if n == 'properties')
+            next(n for n in node.properties if n.name == 'properties')
         with self.assertRaises(StopIteration):
-            next(n for n, _ in node.properties if n == "origin")
+            next(n for n in node.properties if n.name == "origin")
 
     def test_scope_lookup_0(self):
         """Symbol found in local scope with name and default type"""
@@ -137,13 +138,15 @@ class ModelTest(unittest.TestCase):
 
     def test_node_properties_meta(self):
         pds = [pd for pd in sorted(SomeNode.node_properties, key=lambda x: x.name)]
-        self.assertEqual(4, len(pds))
-        self.assertEqual("foo", pds[0].name)
+        self.assertEqual(5, len(pds))
+        self.assertEqual("bar", pds[0].name)
         self.assertFalse(pds[0].provides_nodes)
-        self.assertEqual("multiple", pds[1].name)
-        self.assertTrue(pds[1].provides_nodes)
-        self.assertEqual(Multiplicity.MANY, pds[1].multiplicity)
-        self.assertEqual("name", pds[2].name)
-        self.assertFalse(pds[2].provides_nodes)
-        self.assertEqual("ref", pds[3].name)
-        self.assertTrue(pds[3].provides_nodes)
+        self.assertEqual("foo", pds[1].name)
+        self.assertFalse(pds[1].provides_nodes)
+        self.assertEqual("multiple", pds[2].name)
+        self.assertTrue(pds[2].provides_nodes)
+        self.assertEqual(Multiplicity.MANY, pds[2].multiplicity)
+        self.assertEqual("name", pds[3].name)
+        self.assertFalse(pds[3].provides_nodes)
+        self.assertEqual("ref", pds[4].name)
+        self.assertTrue(pds[4].provides_nodes)

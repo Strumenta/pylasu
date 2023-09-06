@@ -21,7 +21,7 @@ def assign_parents(self: Node):
 
 
 def children(self: Node):
-    yield from nodes_in(v for _, v in self.properties)
+    yield from nodes_in(p.value for p in self.properties)
 
 
 Node.children = internal_property(children)
@@ -44,7 +44,9 @@ def search_by_type(self: Node, target_type, walker=walk):
 
 @extension_method(Node)
 def transform_children(self: Node, operation: Callable[[Node], Node]):
-    for name, value in self.properties:
+    for prop in self.properties:
+        name = prop.name
+        value = prop.value
         if isinstance(value, Node):
             new_value = operation(value)
             if new_value != value:

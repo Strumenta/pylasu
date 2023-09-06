@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from typing import List
 
 from pylasu.model import Node
+from pylasu.testing.testing import assert_asts_are_equal
+from pylasu.transformation.generic_nodes import GenericNode
 from pylasu.transformation.transformation import ASTTransformer, PropertyRef, ast_transformer
 
 
@@ -112,6 +114,45 @@ class ASTTransformerTest(unittest.TestCase):
                     ),
                     ALangIntLiteral(4))))
 
+    def test_dropping_nodes(self):
+        prop = PropertyRef("statements")
+        transformer = ASTTransformer()
+        transformer.register_node_factory(CU, CU).with_child(prop, prop)
+        transformer.register_node_factory(DisplayIntStatement, lambda _: None)
+        transformer.register_identity_transformation(SetStatement)
+        cu = CU(statements=[DisplayIntStatement(value=456), SetStatement(variable="foo", value=123)])
+        transformed_cu = transformer.transform(cu)
+        # TODO not yet supported self.assertTrue(transformed_cu.hasValidParents())
+        self.assertEqual(transformed_cu.origin, cu)
+        self.assertEqual(1, len(transformed_cu.statements))
+        assert_asts_are_equal(self, cu.statements[1], transformed_cu.statements[0])
+
+    def test_nested_origin(self):
+        prop = PropertyRef("statements")
+        transformer = ASTTransformer()
+        transformer.register_node_factory(CU, CU).with_child(prop, prop)
+        transformer.register_node_factory(DisplayIntStatement, lambda s: s.with_origin(GenericNode()))
+        cu = CU(statements=[DisplayIntStatement(value=456)])
+        transformed_cu = transformer.transform(cu)
+        # TODO not yet supported self.assertTrue(transformed_cu.hasValidParents())
+        self.assertEqual(transformed_cu.origin, cu)
+        self.assertIsInstance(transformed_cu.statements[0].origin, GenericNode)
+
+    def test_transforming_one_node_to_many(self):
+        prop = PropertyRef("stmts")
+        transformer = ASTTransformer(allow_generic_node=False)
+        transformer.register_node_factory(BarRoot, BazRoot).with_child(prop, prop)
+        transformer.register_node_factory(BarStmt, lambda s: [BazStmt(f"{s.desc}-1"), BazStmt(f"{s.desc}-2")])
+        original = BarRoot([BarStmt("a"), BarStmt("b")])
+        transformed = transformer.transform(original)
+        # TODO not yet supported assertTrue { transformed.hasValidParents() }
+        self.assertEquals(transformed.origin, original)
+        assert_asts_are_equal(
+            self,
+            BazRoot([BazStmt("a-1"), BazStmt("a-2"), BazStmt("b-1"), BazStmt("b-2")]),
+            transformed
+        )
+
 
 @dataclass
 class ALangExpression(Node):
@@ -155,6 +196,26 @@ class BLangSum(BLangExpression):
 class BLangMult(BLangExpression):
     left: BLangExpression
     right: BLangExpression
+
+
+@dataclass
+class BarStmt(Node):
+    desc: str
+
+
+@dataclass
+class BarRoot(Node):
+    stmts: List[BarStmt] = field(default_factory=list)
+
+
+@dataclass
+class BazStmt(Node):
+    desc: str
+
+
+@dataclass
+class BazRoot(Node):
+    stmts: List[BazStmt] = field(default_factory=list)
 
 
 if __name__ == '__main__':

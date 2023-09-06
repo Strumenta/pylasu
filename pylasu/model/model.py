@@ -1,10 +1,10 @@
-import enum
 import inspect
 from abc import ABC, abstractmethod, ABCMeta
 from dataclasses import Field, MISSING, dataclass, field
 from typing import Optional, Callable, List
 
 from .position import Position, Source
+from .reflection import Multiplicity, PropertyDescription
 from ..reflection import getannotations
 from ..reflection.reflection import is_sequence_type, get_type_arguments
 
@@ -73,22 +73,6 @@ def is_internal_property_or_method(value):
     return isinstance(value, internal_property) or isinstance(value, InternalField) or isinstance(value, Callable)
 
 
-class Multiplicity(enum.Enum):
-    OPTIONAL = 0
-    SINGULAR = 1
-    MANY = 2
-
-
-@dataclass
-class PropertyDescriptor:
-    name: str
-    provides_nodes: bool
-    multiplicity: Multiplicity = Multiplicity.SINGULAR
-
-    def multiple(self):
-        return self.multiplicity == Multiplicity.MANY
-
-
 def provides_nodes(decl_type):
     return isinstance(decl_type, type) and issubclass(decl_type, Node)
 
@@ -123,11 +107,11 @@ class Concept(ABCMeta):
                     else:
                         is_child_property = provides_nodes(decl_type)
                 known_property_names.add(name)
-                yield PropertyDescriptor(name, is_child_property, multiplicity)
+                yield PropertyDescription(name, is_child_property, multiplicity)
         for name in dir(cl):
             if name not in known_property_names and cls.is_node_property(name):
                 known_property_names.add(name)
-                yield PropertyDescriptor(name, False)
+                yield PropertyDescription(name, False)
 
     def is_node_property(cls, name):
         return not name.startswith('_') \
@@ -178,10 +162,8 @@ class Node(Origin, Destination, metaclass=Concept):
 
     @internal_property
     def properties(self):
-        return ((name, getattr(self, name)) for name in dir(self)
-                if not name.startswith('_')
-                and name not in self.__internal_properties__
-                and name not in [n for n, v in inspect.getmembers(type(self), is_internal_property_or_method)])
+        return (PropertyDescription(p.name, p.provides_nodes, p.multiplicity, getattr(self, p.name))
+                for p in self.__class__.node_properties)
 
     @internal_property
     def _fields(self):
