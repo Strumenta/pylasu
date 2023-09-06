@@ -29,6 +29,9 @@ python -m build
 python -m twine upload dist/*
 ```
 
+**Note:** if we have [two-factor authentication (2FA)](https://pypi.org/help/#twofa) enabled on PyPI, 
+we have to [use an API token](https://pypi.org/help/#apitoken).
+
 If all goes well, tag the release:
 
 ```shell

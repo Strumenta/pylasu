@@ -12,3 +12,4 @@ pyvenv.cfg
 __pycache__
 /.token
 /antlr-*.jar
+.DS_Store
