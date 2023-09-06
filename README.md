@@ -20,13 +20,17 @@ flake8 . && flake8 tests
 
 ## Packaging and distributing
 
-Update version in pyproject.toml, setup.cfg and setup.py _(TODO do we need all three?)_, then run:
+Update version in `pyproject.toml`, `setup.cfg` and `pylasu/__version__.py` _(TODO do we need all three?)_,
+commit and check that CI completes normally. Then run:
 
 ```shell
 rm dist/*
 python -m build
 python -m twine upload dist/*
 ```
+
+**Note:** if we have [two-factor authentication (2FA)](https://pypi.org/help/#twofa) enabled on PyPI, 
+we have to [use an API token](https://pypi.org/help/#apitoken).
 
 If all goes well, tag the release:
 
@@ -57,4 +61,5 @@ make html
 If everything goes as it should, in `docs/_build/html` you'll find the generated documentation.
 
 We also host the documentation on ReadTheDocs. The project is [pylasu](https://readthedocs.org/projects/pylasu/). 
-Documentation needs to be built manually for each release for it to appear online on https://pylasu.readthedocs.io.
+Documentation needs to be [built manually](https://readthedocs.org/projects/pylasu/) for each release for it to appear
+online on https://pylasu.readthedocs.io.
