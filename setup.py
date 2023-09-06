@@ -12,7 +12,7 @@ with open(os.path.join(here, "pylasu", '__version__.py')) as f:
 setup(
     name='pylasu',
     packages=find_packages(exclude=["tests"]),
-    version=about['version'],
+    version=about['__version__'],
     description='Pylasu is an AST Library in the StarLasu family, targeting the Python language.',
     author='Strumenta S.R.L.',
     license='Apache License V2',
