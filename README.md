@@ -61,4 +61,5 @@ make html
 If everything goes as it should, in `docs/_build/html` you'll find the generated documentation.
 
 We also host the documentation on ReadTheDocs. The project is [pylasu](https://readthedocs.org/projects/pylasu/). 
-Documentation needs to be built manually for each release for it to appear online on https://pylasu.readthedocs.io.
+Documentation needs to be [built manually](https://readthedocs.org/projects/pylasu/) for each release for it to appear
+online on https://pylasu.readthedocs.io.
