@@ -35,12 +35,11 @@ class Issue:
         return Issue(IssueType.SEMANTIC, message, severity, position)
 
 
-@dataclass
-class Result:
-    root: Node
+class WithIssues:
+    """Many classes have the necessity of tracking issues"""
     issues: List[Issue] = field(default_factory=list)
 
 
-class WithIssues:
-    """Many classes have the necessity of tracking issues"""
-    issues: List[Issue]
+@dataclass
+class Result(WithIssues):
+    root: Node
