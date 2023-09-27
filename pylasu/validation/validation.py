@@ -39,3 +39,8 @@ class Issue:
 class Result:
     root: Node
     issues: List[Issue] = field(default_factory=list)
+
+
+class WithIssues:
+    """Many classes have the necessity of tracking issues"""
+    issues: List[Issue]
