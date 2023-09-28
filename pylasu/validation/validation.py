@@ -45,4 +45,3 @@ class WithIssues:
 class Result(WithIssues):
     root: Node
     issues: List[Issue] = field(default_factory=list)
-
