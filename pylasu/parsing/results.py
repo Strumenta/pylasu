@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 from antlr4 import ParserRuleContext, Token
@@ -10,11 +10,13 @@ from pylasu.validation.validation import WithIssues, IssueType, Issue
 @dataclass
 class FirstStageResult(WithIssues):
     parse_tree: ParserRuleContext
+    issues: List[Issue] = field(default_factory=list)
 
 
 @dataclass
 class LexingResult(WithIssues):
     tokens: List[Token]
+    issues: List[Issue] = field(default_factory=list)
 
 
 @dataclass
