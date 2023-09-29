@@ -38,10 +38,9 @@ class Issue:
 @dataclass
 class WithIssues:
     """Many classes have the necessity of tracking issues"""
-    issues: List[Issue]
+    issues: List[Issue] = field(default_factory=list, init=False)
 
 
 @dataclass
 class Result(WithIssues):
     root: Node
-    issues: List[Issue] = field(default_factory=list)
