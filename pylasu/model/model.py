@@ -34,7 +34,7 @@ def internal_field(
     try:
         # Python 3.10+
         return InternalField(default, default_factory, init, repr, hash, compare, metadata, kw_only)
-    except:
+    except TypeError:
         return InternalField(default, default_factory, init, repr, hash, compare, metadata)
 
 
