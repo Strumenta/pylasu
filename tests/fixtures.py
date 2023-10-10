@@ -1,13 +1,14 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from pylasu.model import Node, pos
+from pylasu.model import Node, pos, internal_field
 
 
 @dataclass
 class Box(Node):
     name: str = None
     contents: List[Node] = field(default_factory=list)
+    internal: str = internal_field(default="unused")
 
 
 @dataclass

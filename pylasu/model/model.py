@@ -25,12 +25,17 @@ class InternalField(Field):
 
 
 def internal_field(
-        *, default=MISSING, default_factory=MISSING, init=True, repr=True, hash=None, compare=True, metadata=None):
+        *, default=MISSING, default_factory=MISSING, init=True, repr=True, hash=None, compare=True, metadata=None,
+        kw_only=False):
     """Return an object to identify internal dataclass fields. The arguments are the same as dataclasses.field."""
 
     if default is not MISSING and default_factory is not MISSING:
         raise ValueError('cannot specify both default and default_factory')
-    return InternalField(default, default_factory, init, repr, hash, compare, metadata)
+    try:
+        # Python 3.10+
+        return InternalField(default, default_factory, init, repr, hash, compare, metadata, kw_only)
+    except:
+        return InternalField(default, default_factory, init, repr, hash, compare, metadata)
 
 
 class Origin(ABC):
