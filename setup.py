@@ -10,12 +10,8 @@ with open(os.path.join(here, "pylasu", '__version__.py')) as f:
     exec(f.read(), about)
 
 setup(
-    name='pylasu',
     packages=find_packages(exclude=["tests"]),
     version=about['__version__'],
-    description='Pylasu is an AST Library in the StarLasu family, targeting the Python language.',
-    author='Strumenta S.R.L.',
-    license='Apache License V2',
     install_requires=[],
     setup_requires=['pytest-runner'],
     tests_require=['pytest==4.4.1'],
