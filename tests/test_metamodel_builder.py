@@ -43,7 +43,7 @@ class MetamodelBuilderTest(unittest.TestCase):
         resource.append(eClass)
         with BytesIO() as out:
             resource.save(out)
-            self.assertEqual(
+            self.assertEquals(
                 json.loads('''{
   "eClass": "http://www.eclipse.org/emf/2002/Ecore#//EPackage",
   "nsPrefix": "test",
@@ -101,24 +101,24 @@ class MetamodelBuilderTest(unittest.TestCase):
         mb = MetamodelBuilder("tests.fixtures", "https://strumenta.com/pylasu/test/fixtures")
         box = mb.provide_class(Box)
         self.assertIsInstance(box(), EObject)
-        self.assertEqual(box.eClass.ePackage, mb.package)
+        self.assertEquals(box.eClass.ePackage, mb.package)
         self.assertTrue(box.eClass in mb.package.eContents)
         self.assertIsNotNone(
             next((a for a in box.eClass.eAllAttributes() if a.name == "name"), None))
-        self.assertEqual(1, len(box.eClass.eAllAttributes()))
+        self.assertEquals(1, len(box.eClass.eAllAttributes()))
 
     def test_build_metamodel_single_package_inheritance(self):
         mb = MetamodelBuilder("tests.fixtures", "https://strumenta.com/pylasu/test/fixtures")
         box = mb.provide_class(ReinforcedBox)
         self.assertIsInstance(box(), EObject)
-        self.assertEqual(box.eClass.ePackage, mb.package)
-        self.assertEqual(2, len(mb.package.eContents))
+        self.assertEquals(box.eClass.ePackage, mb.package)
+        self.assertEquals(2, len(mb.package.eContents))
         self.assertTrue(box.eClass in mb.package.eContents)
         self.assertIsNotNone(
             next((a for a in box.eClass.eAllAttributes() if a.name == "name"), None))
         self.assertIsNotNone(
             next((a for a in box.eClass.eAllAttributes() if a.name == "strength"), None))
-        self.assertEqual(2, len(box.eClass.eAllAttributes()))
+        self.assertEquals(2, len(box.eClass.eAllAttributes()))
 
 
 STARLASU_MODEL_JSON = '''{

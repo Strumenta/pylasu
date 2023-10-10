@@ -33,11 +33,11 @@ class ModelTest(unittest.TestCase):
 
     def test_reference_by_name_unsolved_str(self):
         ref_unsolved = ReferenceByName[SomeNode]("foo")
-        self.assertEqual("Ref(foo)[Unsolved]", str(ref_unsolved))
+        self.assertEquals("Ref(foo)[Unsolved]", str(ref_unsolved))
 
     def test_reference_by_name_solved_str(self):
         ref_solved = ReferenceByName[SomeNode]("foo", SomeNode(name="foo"))
-        self.assertEqual("Ref(foo)[Solved]", str(ref_solved))
+        self.assertEquals("Ref(foo)[Solved]", str(ref_solved))
 
     def test_try_to_resolve_positive_case_same_case(self):
         ref = ReferenceByName[SomeNode]("foo")
@@ -61,9 +61,9 @@ class ModelTest(unittest.TestCase):
 
     def test_node_with_position(self):
         node = Node().with_position(Position(Point(1, 0), Point(2, 1)))
-        self.assertEqual(Position(Point(1, 0), Point(2, 1)), node.position)
+        self.assertEquals(Position(Point(1, 0), Point(2, 1)), node.position)
         node = SomeNode("").with_position(Position(Point(1, 0), Point(2, 1)))
-        self.assertEqual(Position(Point(1, 0), Point(2, 1)), node.position)
+        self.assertEquals(Position(Point(1, 0), Point(2, 1)), node.position)
 
     def test_node_properties(self):
         node = SomeNode("n").with_position(Position(Point(1, 0), Point(2, 1)))
@@ -84,7 +84,7 @@ class ModelTest(unittest.TestCase):
         local_symbol = SomeSymbol(name='a', index=0)
         scope = Scope(symbols={'a': [local_symbol]}, parent=Scope(symbols={'a': [SomeSymbol(name='a', index=1)]}))
         result = scope.lookup(symbol_name='a')
-        self.assertEqual(result, local_symbol)
+        self.assertEquals(result, local_symbol)
         self.assertIsInstance(result, Symbol)
 
     def test_scope_lookup_1(self):
@@ -92,7 +92,7 @@ class ModelTest(unittest.TestCase):
         upper_symbol = SomeSymbol(name='a', index=0)
         scope = Scope(symbols={'b': [SomeSymbol(name='b', index=0)]}, parent=Scope(symbols={'a': [upper_symbol]}))
         result = scope.lookup(symbol_name='a')
-        self.assertEqual(result, upper_symbol)
+        self.assertEquals(result, upper_symbol)
         self.assertIsInstance(result, Symbol)
 
     def test_scope_lookup_2(self):
@@ -111,7 +111,7 @@ class ModelTest(unittest.TestCase):
         upper_symbol = SomeSymbol(name='a', index=0)
         scope = Scope(symbols={'b': [SomeSymbol(name='b', index=0)]}, parent=Scope(symbols={'a': [upper_symbol]}))
         result = scope.lookup(symbol_name='a', symbol_type=SomeSymbol)
-        self.assertEqual(result, upper_symbol)
+        self.assertEquals(result, upper_symbol)
         self.assertIsInstance(result, SomeSymbol)
 
     def test_scope_lookup_5(self):
@@ -119,7 +119,7 @@ class ModelTest(unittest.TestCase):
         upper_symbol = SomeSymbol(name='a', index=0)
         scope = Scope(symbols={'a': [AnotherSymbol(name='a', index=0)]}, parent=Scope(symbols={'a': [upper_symbol]}))
         result = scope.lookup(symbol_name='a', symbol_type=SomeSymbol)
-        self.assertEqual(result, upper_symbol)
+        self.assertEquals(result, upper_symbol)
         self.assertIsInstance(result, SomeSymbol)
 
     def test_scope_lookup_6(self):
@@ -138,15 +138,15 @@ class ModelTest(unittest.TestCase):
 
     def test_node_properties_meta(self):
         pds = [pd for pd in sorted(SomeNode.node_properties, key=lambda x: x.name)]
-        self.assertEqual(5, len(pds))
-        self.assertEqual("bar", pds[0].name)
+        self.assertEquals(5, len(pds))
+        self.assertEquals("bar", pds[0].name)
         self.assertFalse(pds[0].provides_nodes)
-        self.assertEqual("foo", pds[1].name)
+        self.assertEquals("foo", pds[1].name)
         self.assertFalse(pds[1].provides_nodes)
-        self.assertEqual("multiple", pds[2].name)
+        self.assertEquals("multiple", pds[2].name)
         self.assertTrue(pds[2].provides_nodes)
-        self.assertEqual(Multiplicity.MANY, pds[2].multiplicity)
-        self.assertEqual("name", pds[3].name)
+        self.assertEquals(Multiplicity.MANY, pds[2].multiplicity)
+        self.assertEquals("name", pds[3].name)
         self.assertFalse(pds[3].provides_nodes)
-        self.assertEqual("ref", pds[4].name)
+        self.assertEquals("ref", pds[4].name)
         self.assertTrue(pds[4].provides_nodes)

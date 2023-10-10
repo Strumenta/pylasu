@@ -70,7 +70,7 @@ class ASTTransformerTest(unittest.TestCase):
                 SetStatement(variable="foo", value=123),
                 DisplayIntStatement(value=456)])
         transformed_cu = transformer.transform(cu)
-        self.assertEqual(cu, transformed_cu)
+        self.assertEquals(cu, transformed_cu)
         self.assertEquals(transformed_cu.origin, cu)
 
     def test_translate_binary_expression(self):
@@ -87,7 +87,7 @@ class ASTTransformerTest(unittest.TestCase):
         my_transformer.register_identity_transformation(IntLiteral)
         source = GenericBinaryExpression(Operator.MULT, IntLiteral(7), IntLiteral(8))
         t1 = my_transformer.transform(source)
-        self.assertEqual(t1, source.to_ast())
+        self.assertEquals(t1, source.to_ast())
 
     def test_translate_across_languages(self):
         transformer = ASTTransformer(allow_generic_node=False)
@@ -98,7 +98,7 @@ class ASTTransformerTest(unittest.TestCase):
         transformer.register_node_factory(
             ALangMult,
             lambda source: BLangMult(transformer.transform(source.left), transformer.transform(source.right)))
-        self.assertEqual(
+        self.assertEquals(
             BLangMult(
                 BLangSum(
                     BLangIntLiteral(1),
@@ -123,8 +123,8 @@ class ASTTransformerTest(unittest.TestCase):
         cu = CU(statements=[DisplayIntStatement(value=456), SetStatement(variable="foo", value=123)])
         transformed_cu = transformer.transform(cu)
         # TODO not yet supported self.assertTrue(transformed_cu.hasValidParents())
-        self.assertEqual(transformed_cu.origin, cu)
-        self.assertEqual(1, len(transformed_cu.statements))
+        self.assertEquals(transformed_cu.origin, cu)
+        self.assertEquals(1, len(transformed_cu.statements))
         assert_asts_are_equal(self, cu.statements[1], transformed_cu.statements[0])
 
     def test_nested_origin(self):
@@ -135,7 +135,7 @@ class ASTTransformerTest(unittest.TestCase):
         cu = CU(statements=[DisplayIntStatement(value=456)])
         transformed_cu = transformer.transform(cu)
         # TODO not yet supported self.assertTrue(transformed_cu.hasValidParents())
-        self.assertEqual(transformed_cu.origin, cu)
+        self.assertEquals(transformed_cu.origin, cu)
         self.assertIsInstance(transformed_cu.statements[0].origin, GenericNode)
 
     def test_transforming_one_node_to_many(self):

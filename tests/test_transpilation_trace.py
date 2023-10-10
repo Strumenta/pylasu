@@ -38,13 +38,13 @@ class ModelTest(unittest.TestCase):
                 message="some issue",
                 severity=starlasu.IssueSeverity.getEEnumLiteral("WARNING"))]
         )
-        self.assertEqual("a:1", tt.originalCode)
-        self.assertEqual("b:2", tt.generatedCode)
-        self.assertEqual("some issue", tt.issues[0].message)
-        self.assertEqual("a", tt.sourceResult.root.name)
-        self.assertEqual(1, tt.sourceResult.root.value)
-        self.assertEqual("b", tt.targetResult.root.name)
-        self.assertEqual(2, tt.targetResult.root.value)
+        self.assertEquals("a:1", tt.originalCode)
+        self.assertEquals("b:2", tt.generatedCode)
+        self.assertEquals("some issue", tt.issues[0].message)
+        self.assertEquals("a", tt.sourceResult.root.name)
+        self.assertEquals(1, tt.sourceResult.root.value)
+        self.assertEquals("b", tt.targetResult.root.name)
+        self.assertEquals(2, tt.targetResult.root.value)
 
         expected = """{
   "eClass" : "https://strumenta.com/kolasu/transpilation/v1#//TranspilationTrace",
@@ -69,7 +69,7 @@ class ModelTest(unittest.TestCase):
     "severity" : "WARNING"
   } ]
 }"""
-        self.assertEqual(json.loads(expected), json.loads(tt.save_as_json("foo.json")))
+        self.assertEquals(json.loads(expected), json.loads(tt.save_as_json("foo.json")))
 
     def test_serialize_transpilation_from_nodes(self):
         mmb = MetamodelBuilder("tests.fixtures", "https://strumenta.com/pylasu/test/fixtures")
@@ -112,4 +112,4 @@ class ModelTest(unittest.TestCase):
             }
         }"""
         as_json = tt.save_as_json("foo.json", mmb.generate())
-        self.assertEqual(json.loads(expected), json.loads(as_json))
+        self.assertEquals(json.loads(expected), json.loads(as_json))

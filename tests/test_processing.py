@@ -25,9 +25,9 @@ class CW(Node):
 
 class ProcessingTest(unittest.TestCase):
     def test_search_by_type(self):
-        self.assertEqual(["1", "2", "3", "4", "5", "6"],
+        self.assertEquals(["1", "2", "3", "4", "5", "6"],
                          [i.name for i in box.search_by_type(Item)])
-        self.assertEqual(["root", "first", "1", "2", "big", "small", "3", "4", "5", "6"],
+        self.assertEquals(["root", "first", "1", "2", "big", "small", "3", "4", "5", "6"],
                          [n.name for n in box.search_by_type(Node)])
 
     def test_replace_in_list(self):
@@ -38,8 +38,8 @@ class ProcessingTest(unittest.TestCase):
         b = BW(a1, [a2, a3])
         b.assign_parents()
         a2.replace_with(a4)
-        self.assertEqual("4", b.many_as[0].s)
-        self.assertEqual(BW(a1, [a4, a3]), b)
+        self.assertEquals("4", b.many_as[0].s)
+        self.assertEquals(BW(a1, [a4, a3]), b)
 
     def test_replace_in_set(self):
         a1 = AW("1")
@@ -56,4 +56,4 @@ class ProcessingTest(unittest.TestCase):
         b = BW(a1, [])
         b.assign_parents()
         a1.replace_with(a2)
-        self.assertEqual("2", b.a.s)
+        self.assertEquals("2", b.a.s)

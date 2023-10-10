@@ -59,7 +59,7 @@ module M {
    entity BAR { }
 }
         """))
-        self.assertEqual(expected_ast, actual_ast)
+        self.assertEquals(expected_ast, actual_ast)
 
     def test_entities_with_features_transformer(self):
         transformer = ParseTreeToASTTransformer(allow_generic_node=False)
@@ -99,7 +99,7 @@ module M {
                 C: FOO;
               }
             }"""))
-        self.assertEqual(expected_ast, actual_ast)
+        self.assertEquals(expected_ast, actual_ast)
 
     def parse_entities(self, code: str) -> AntlrEntityParser.ModuleContext:
         lexer = AntlrEntityLexer(InputStream(code))
