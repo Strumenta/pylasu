@@ -16,8 +16,8 @@ class ParseTreeTest(unittest.TestCase):
         origin = ParseTreeOrigin(parse_tree)
         position = origin.position
         self.assertIsNotNone(position)
-        self.assertEquals(position.start, Point(1, 0))
-        self.assertEquals(position.end, Point(2, 2))
+        self.assertEqual(position.start, Point(1, 0))
+        self.assertEqual(position.end, Point(2, 2))
 
     def test_ast_gen(self):
         generate_nodes_classes_for_parser(SimpleLangParser, globals())

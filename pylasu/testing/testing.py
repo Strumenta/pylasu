@@ -56,11 +56,11 @@ def assert_single_properties_are_equal(case, expected_property, expected_prop_va
 def assert_multi_properties_are_equal(case, expected_property, expected_prop_value, actual_prop_value, context,
                                       consider_position):
     # TODO IgnoreChildren
-    case.assertEquals(actual_prop_value is None, expected_prop_value is None,
-                      f"{context}.{expected_property.name} nullness")
+    case.assertEqual(actual_prop_value is None, expected_prop_value is None,
+                     f"{context}.{expected_property.name} nullness")
     if actual_prop_value is not None and expected_prop_value is not None:
-        case.assertEquals(len(actual_prop_value), len(expected_prop_value),
-                          f"{context}.{expected_property.name} length")
+        case.assertEqual(len(actual_prop_value), len(expected_prop_value),
+                         f"{context}.{expected_property.name} length")
     for expected_it, actual_it, i in \
             zip(expected_prop_value, actual_prop_value, range(len(expected_prop_value))):
         assert_asts_are_equal(case, expected_it, actual_it, f"{context}[{i}]",
