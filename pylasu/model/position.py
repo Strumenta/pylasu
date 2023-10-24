@@ -13,6 +13,9 @@ class Point:
         if self.column < 0:
             raise Exception(f"Column {self.column} cannot be less than 0")
 
+    def is_before(self, other: "Point"):
+        return self < other
+
     def __add__(self, other):
         if isinstance(other, str):
             if len(other) == 0:
