@@ -6,10 +6,9 @@ from .validation.validation import Result, Issue, IssueType, IssueSeverity
 
 
 def unserialize_result(json_result, root_unserializer) -> Result:
-    return Result(
-        root=root_unserializer(json_result['root']) if 'root' in json_result else None,
-        issues=[unserialize_issue(issue) for issue in json_result['issues']] if 'issues' in json_result else []
-    )
+    result = Result(root=root_unserializer(json_result['root']) if 'root' in json_result else None)
+    result.issues = [unserialize_issue(issue) for issue in json_result['issues']] if 'issues' in json_result else []
+    return result
 
 
 def unserialize_issue(json_issue) -> Issue:
