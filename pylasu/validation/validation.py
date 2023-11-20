@@ -38,7 +38,7 @@ class Issue:
 @dataclass
 class WithIssues:
     """Many classes have the necessity of tracking issues"""
-    issues: List[Issue] = field(default_factory=list, init=False)
+    issues: List[Issue] = field(kw_only=True, default_factory=List)
 
 
 @dataclass
