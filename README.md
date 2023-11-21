@@ -18,10 +18,18 @@ python -m unittest discover tests
 flake8 . && flake8 tests
 ```
 
-## Packaging and distributing
+## Packaging and Distribution
 
-Update version in `pyproject.toml`, `setup.cfg` and `pylasu/__version__.py` _(TODO do we need all three?)_,
-commit and check that CI completes normally. Then run:
+Update version in `setup.cfg` and `pylasu/__version__.py` _(TODO do we need both?)_,
+commit and check that CI completes normally. 
+
+Ensure that you have build and twine installed:
+
+```shell
+pip install build twine
+```
+
+Then run:
 
 ```shell
 rm dist/*
