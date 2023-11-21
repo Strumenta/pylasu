@@ -41,11 +41,6 @@ class WithIssues:
     issues: List[Issue] = field(default_factory=list, init=False)
 
 
-@dataclass(init=False)
+@dataclass
 class Result(WithIssues):
     root: Node
-
-    def __init__(self, root: Node, issues: List[Issue] = None):
-        self.root = root
-        if issues:
-            self.issues = issues
