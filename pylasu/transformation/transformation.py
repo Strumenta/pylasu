@@ -5,6 +5,7 @@ from typing import Any, Dict, Callable, TypeVar, Generic, Optional, List, Set, I
 
 from pylasu.model import Node, Origin
 from pylasu.model.errors import GenericErrorNode
+from pylasu.model.model import concept_of
 from pylasu.model.reflection import PropertyDescription
 from pylasu.transformation.generic_nodes import GenericNode
 from pylasu.validation import Issue, IssueSeverity
@@ -32,7 +33,7 @@ class PropertyRef:
 class NodeFactory(Generic[Source, Output]):
     constructor: node_factory_constructor_type
     children: Dict[str, "ChildNodeFactory[Source, Any, Any]"] = field(default_factory=dict)
-    finalizer: Callable[[Source], None] = lambda _: None
+    finalizer: Callable[[Source], None] = field(default=lambda _: None)
 
     def with_child(
             self,
@@ -104,7 +105,7 @@ class ASTTransformer:
         if factory:
             nodes = self.make_nodes(factory, source)
             for node in nodes:
-                for pd in type(node).node_properties:
+                for pd in concept_of(node).node_properties:
                     self.process_child(source, node, pd, factory)
                 factory.finalizer(node)
                 node.parent = parent
@@ -134,7 +135,7 @@ class ASTTransformer:
             if child_node_factory != NO_CHILD_NODE:
                 self.set_child(child_node_factory, source, node, pd)
         else:
-            # TODO should we support @Mapped?
+            # TODO should we support @Mapped / dot-notation?
             factory.children[child_key] = NO_CHILD_NODE
 
     def as_origin(self, source: Any) -> Optional[Origin]:

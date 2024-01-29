@@ -5,8 +5,7 @@ from typing import Optional, Callable, List
 
 from .position import Position, Source
 from .reflection import Multiplicity, PropertyDescription
-from ..reflection import getannotations
-from ..reflection.reflection import is_sequence_type, get_type_arguments
+from ..reflection import getannotations, get_type_arguments, is_sequence_type
 
 
 class internal_property(property):
@@ -177,3 +176,17 @@ class Node(Origin, Destination, metaclass=Concept):
     @internal_property
     def node_type(self):
         return type(self)
+
+
+def concept_of(node):
+    properties = dir(node)
+    if "__concept__" in properties:
+        node_type = node.__concept__
+    elif "node_type" in properties:
+        node_type = node.node_type
+    else:
+        node_type = type(node)
+    if isinstance(node_type, Concept):
+        return node_type
+    else:
+        raise Exception(f"Not a concept: {node_type} of {node}")
