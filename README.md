@@ -56,7 +56,8 @@ we have to [use an API token](https://pypi.org/help/#apitoken).
 If all goes well, tag the release:
 
 ```shell
-git tag 
+git tag -a v0.7.1 -m "Version 0.7.1"
+git push origin v0.7.1
 ```
 
 ### Extracting Documentation
