@@ -18,18 +18,31 @@ python -m unittest discover tests
 flake8 . && flake8 tests
 ```
 
+## Testing
+
+```shell
+pytest tests
+```
+
 ## Packaging and Distribution
 
 Update version in `setup.cfg` and `pylasu/__version__.py` _(TODO do we need both?)_,
 commit and check that CI completes normally. 
 
-Ensure that you have build and twine installed:
+Let's ensure that we have build and twine installed:
 
 ```shell
 pip install build twine
 ```
 
-Then run:
+Then, check the project can be released by linting and running the test suite:
+
+```shell
+flake8 . && flake8 tests
+pytest tests
+```
+
+Finally, we can run:
 
 ```shell
 rm dist/*

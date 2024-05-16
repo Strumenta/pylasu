@@ -43,7 +43,8 @@ Token.end_point = property(token_end_point)
 
 @extension_method(ParserRuleContext)
 def to_position(self: ParserRuleContext, source: Source = None):
-    if self.start.start_point <= self.stop.end_point:
+    # In case of an empty input, the start token will be EOF and the end token will be None
+    if self.stop and self.start.start_point <= self.stop.end_point:
         return Position(self.start.start_point, self.stop.end_point, source)
     else:
         # In case of parse errors, sometimes ANTLR inserts nodes that end before they start

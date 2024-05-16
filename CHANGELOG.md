@@ -2,6 +2,19 @@
 All notable changes to this project from version 0.4.0 upwards are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.7.1] – 2024-05-16
+
+### Fixed
+- `ParserRuleContext.to_position` extension method when the input stream is empty
+
+## [0.7.0] – 2023-11-21
+
+### Added
+- `Point.isBefore` method as in Kolasu
+
+### Fixed
+- Bug in the deserialization of Result
+
 ## [0.6.0] – 2023-10-10
 
 ### Added
