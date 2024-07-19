@@ -136,6 +136,13 @@ class ModelTest(unittest.TestCase):
         result = scope.lookup(symbol_name='a', symbol_type=AnotherSymbol)
         self.assertIsNone(result)
 
+    def test_scope_case_insensitive_lookup(self):
+        local_symbol = SomeSymbol(name='a', index=0)
+        scope = Scope(symbols={'a': [local_symbol]}, parent=Scope(symbols={'a': [SomeSymbol(name='a', index=1)]}))
+        result = scope.lookup(symbol_name='A', case_insensitive=True)
+        self.assertEqual(result, local_symbol)
+        self.assertIsInstance(result, Symbol)
+
     def test_node_properties_meta(self):
         pds = [pd for pd in sorted(SomeNode.node_properties, key=lambda x: x.name)]
         self.assertEqual(5, len(pds))
