@@ -14,7 +14,7 @@ class internal_property(property):
 
 def internal_properties(*props: str):
     def decorate(cls: type):
-        cls.__internal_properties__ = [*Node.__internal_properties__, *props]
+        cls.__internal_properties__ = getattr(cls, "__internal_properties__", []) + [*Node.__internal_properties__, *props]
         return cls
     return decorate
 
