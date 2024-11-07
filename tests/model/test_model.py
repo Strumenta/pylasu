@@ -145,7 +145,7 @@ class ModelTest(unittest.TestCase):
 
     def test_node_properties_meta(self):
         pds = [pd for pd in sorted(SomeNode.node_properties, key=lambda x: x.name)]
-        self.assertEqual(5, len(pds))
+        self.assertEqual(5, len(pds), f"{pds} should be 5")
         self.assertEqual("bar", pds[0].name)
         self.assertFalse(pds[0].provides_nodes)
         self.assertEqual("foo", pds[1].name)
