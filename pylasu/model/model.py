@@ -85,7 +85,9 @@ class Concept(ABCMeta):
 
     def __init__(cls, what, bases=None, dict=None):
         super().__init__(what, bases, dict)
-        cls.__internal_properties__ = ["origin", "destination", "parent", "position", "position_override"]
+        cls.__internal_properties__ = \
+            (["origin", "destination", "parent", "position", "position_override"] +
+             [n for n, v in inspect.getmembers(cls, is_internal_property_or_method)])
 
     @property
     def node_properties(cls):
@@ -118,9 +120,7 @@ class Concept(ABCMeta):
                 yield PropertyDescription(name, False)
 
     def is_node_property(cls, name):
-        return not name.startswith('_') \
-            and name not in cls.__internal_properties__ \
-            and name not in [n for n, v in inspect.getmembers(cls, is_internal_property_or_method)]
+        return not name.startswith('_') and name not in cls.__internal_properties__
 
 
 class Node(Origin, Destination, metaclass=Concept):
