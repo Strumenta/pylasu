@@ -5,6 +5,7 @@ from typing import List
 from pylasu.model import Node, Position, Point
 from pylasu.model.reflection import Multiplicity
 from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
+from pylasu.support import extension_method
 
 
 @dataclasses.dataclass
@@ -144,6 +145,10 @@ class ModelTest(unittest.TestCase):
         self.assertIsInstance(result, Symbol)
 
     def test_node_properties_meta(self):
+        @extension_method(Node)
+        def frob_node(_: Node):
+            pass
+
         pds = [pd for pd in sorted(SomeNode.node_properties, key=lambda x: x.name)]
         self.assertEqual(5, len(pds), f"{pds} should be 5")
         self.assertEqual("bar", pds[0].name)
