@@ -14,7 +14,8 @@ class internal_property(property):
 
 def internal_properties(*props: str):
     def decorate(cls: type):
-        cls.__internal_properties__ = getattr(cls, "__internal_properties__", []) + [*Node.__internal_properties__, *props]
+        cls.__internal_properties__ = (
+            getattr(cls, "__internal_properties__", []) + [*Node.__internal_properties__, *props])
         return cls
     return decorate
 
@@ -86,8 +87,8 @@ class Concept(ABCMeta):
     def __init__(cls, what, bases=None, dict=None):
         super().__init__(what, bases, dict)
         cls.__internal_properties__ = \
-            (["origin", "destination", "parent", "position", "position_override"] +
-             [n for n, v in inspect.getmembers(cls, is_internal_property_or_method)])
+            (["origin", "destination", "parent", "position", "position_override"]
+             + [n for n, v in inspect.getmembers(cls, is_internal_property_or_method)])
 
     @property
     def node_properties(cls):

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from itertools   import chain
+from itertools import chain
 from typing import TypeVar, Generic, Optional, List, Dict
 
 
