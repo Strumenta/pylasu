@@ -26,8 +26,7 @@ pytest tests
 
 ## Packaging and Distribution
 
-Update version in `setup.cfg` and `pylasu/__version__.py` _(TODO do we need both?)_,
-commit and check that CI completes normally. 
+Update version in `pylasu/__init__.py`, commit, push and check that CI completes normally. 
 
 Let's ensure that we have build and twine installed:
 
@@ -45,7 +44,7 @@ pytest tests
 Finally, we can run:
 
 ```shell
-rm dist/*
+rm -f dist/*
 python -m build
 python -m twine upload dist/*
 ```
@@ -56,8 +55,8 @@ we have to [use an API token](https://pypi.org/help/#apitoken).
 If all goes well, tag the release:
 
 ```shell
-git tag -a v0.7.1 -m "Version 0.7.1"
-git push origin v0.7.1
+git tag -a v0.7.3 -m "Version 0.7.3"
+git push origin v0.7.3
 ```
 
 ### Extracting Documentation

@@ -23,3 +23,17 @@ license = { file="LICENSE" }
 [project.urls]
 "Homepage" = "https://github.com/strumenta/pylasu"
 "Bug Tracker" = "https://github.com/strumenta/pylasu/issues"
+
+[tool.setuptools.dynamic]
+version = {attr = "pylasu.VERSION"}
+
+[tool.setuptools.packages.find]
+include = ["pylasu*"]
+
+[tool.coverage.run]
+branch = true
+omit = ["docs/*", "tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

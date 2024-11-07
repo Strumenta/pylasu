@@ -2,6 +2,17 @@
 All notable changes to this project from version 0.4.0 upwards are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.7.2] – 2024-11-07
+
+### Added
+- Case-insensitive symbol lookup
+
+### Changed
+- Improved performance of `Concept.is_node_property` 
+
+### Fixed
+- inheritance of internal properties
+
 ## [0.7.1] – 2024-05-16
 
 ### Fixed
