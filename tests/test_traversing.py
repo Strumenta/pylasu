@@ -1,7 +1,8 @@
 import unittest
 
 from pylasu.model import pos
-from tests.fixtures import box
+from pylasu.model.traversing import find_ancestor_of_type
+from tests.fixtures import box, Box
 
 
 class TraversingTest(unittest.TestCase):
@@ -42,3 +43,8 @@ class TraversingTest(unittest.TestCase):
         box.assign_parents()
         item4 = box.contents[2].contents[0].contents[1]
         self.assertEqual(["small", "big", "root"], [n.name for n in item4.walk_ancestors()])
+
+    def test_find_ancestor_of_type(self):
+        box.assign_parents()
+        item = box.contents[1]
+        self.assertEqual(box, find_ancestor_of_type(item, Box))

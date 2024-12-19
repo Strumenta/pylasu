@@ -1,3 +1,5 @@
+from typing import TypeVar, Type
+
 from . import Position
 from .model import Node
 from ..support import extension_method
@@ -56,8 +58,10 @@ def walk_descendants(self: Node, walker=walk, restrict_to=Node):
             yield node
 
 
+T = TypeVar("T")
+
 @extension_method(Node)
-def find_ancestor_of_type(self: Node, target: type):
+def find_ancestor_of_type(self: Node, target: Type[T]) -> T:
     """Returns the nearest ancestor of this node that is an instance of the target type.
 
     Note that type is not strictly forced to be a subtype of Node. This is intended to support trait types like
