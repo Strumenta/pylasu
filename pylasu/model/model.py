@@ -1,11 +1,12 @@
 import inspect
 from abc import ABC, abstractmethod, ABCMeta
 from dataclasses import Field, MISSING, dataclass, field
-from typing import Optional, Callable, List
+from typing import Optional, Callable, List, Union
 
 from .position import Position, Source
 from .reflection import Multiplicity, PropertyDescription
 from ..reflection import getannotations, get_type_arguments, is_sequence_type
+from ..reflection.reflection import get_type_origin
 
 
 class internal_property(property):
@@ -79,7 +80,19 @@ def is_internal_property_or_method(value):
 
 
 def provides_nodes(decl_type):
-    return isinstance(decl_type, type) and issubclass(decl_type, Node)
+    if get_type_origin(decl_type) is Union:
+        provides = None
+        for tp in get_type_arguments(decl_type):
+            if tp is type(None):
+                continue
+            arg_provides = provides_nodes(tp)
+            if provides is None:
+                provides = arg_provides
+            elif provides != arg_provides:
+                raise Exception(f"Type {decl_type} mixes nodes and non-nodes")
+        return provides
+    else:
+        return isinstance(decl_type, type) and issubclass(decl_type, Node)
 
 
 class Concept(ABCMeta):

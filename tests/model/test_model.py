@@ -1,6 +1,6 @@
 import dataclasses
 import unittest
-from typing import List
+from typing import List, Optional, Union
 
 from pylasu.model import Node, Position, Point
 from pylasu.model.reflection import Multiplicity
@@ -15,6 +15,7 @@ class SomeNode(Node, Named):
     __private__ = 4
     ref: Node = None
     multiple: List[Node] = dataclasses.field(default_factory=list)
+    multiple_opt: List[Optional[Node]] = dataclasses.field(default_factory=list)
 
     def __post_init__(self):
         self.bar = 5
@@ -28,6 +29,14 @@ class SomeSymbol(Symbol):
 @dataclasses.dataclass
 class AnotherSymbol(Symbol):
     index: int = dataclasses.field(default=None)
+
+
+@dataclasses.dataclass
+class InvalidNode(Node):
+    attr: int
+    child: SomeNode
+    invalid_prop: Union[Node, str] = None
+    another_child: Node = None
 
 
 class ModelTest(unittest.TestCase):
@@ -150,7 +159,7 @@ class ModelTest(unittest.TestCase):
             pass
 
         pds = [pd for pd in sorted(SomeNode.node_properties, key=lambda x: x.name)]
-        self.assertEqual(5, len(pds), f"{pds} should be 5")
+        self.assertEqual(6, len(pds), f"{pds} should be 6")
         self.assertEqual("bar", pds[0].name)
         self.assertFalse(pds[0].provides_nodes)
         self.assertEqual("foo", pds[1].name)
@@ -158,7 +167,12 @@ class ModelTest(unittest.TestCase):
         self.assertEqual("multiple", pds[2].name)
         self.assertTrue(pds[2].provides_nodes)
         self.assertEqual(Multiplicity.MANY, pds[2].multiplicity)
-        self.assertEqual("name", pds[3].name)
-        self.assertFalse(pds[3].provides_nodes)
-        self.assertEqual("ref", pds[4].name)
-        self.assertTrue(pds[4].provides_nodes)
+        self.assertEqual("multiple_opt", pds[3].name)
+        self.assertTrue(pds[3].provides_nodes)
+        self.assertEqual(Multiplicity.MANY, pds[3].multiplicity)
+        self.assertEqual("name", pds[4].name)
+        self.assertFalse(pds[4].provides_nodes)
+        self.assertEqual("ref", pds[5].name)
+        self.assertTrue(pds[5].provides_nodes)
+
+        self.assertRaises(Exception, lambda: [x for x in InvalidNode.node_properties])

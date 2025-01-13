@@ -60,6 +60,7 @@ def walk_descendants(self: Node, walker=walk, restrict_to=Node):
 
 T = TypeVar("T")
 
+
 @extension_method(Node)
 def find_ancestor_of_type(self: Node, target: Type[T]) -> T:
     """Returns the nearest ancestor of this node that is an instance of the target type.
