@@ -2,6 +2,14 @@
 All notable changes to this project from version 0.4.0 upwards are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.7.3] – 2025-01-13
+
+### Changed
+- More type-safe signature for `find_ancestor_of_type`
+
+### Fixed
+- `provides_nodes` for optional and union types
+
 ## [0.7.2] – 2024-11-07
 
 ### Added
