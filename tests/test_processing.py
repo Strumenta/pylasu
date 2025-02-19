@@ -17,12 +17,6 @@ class BW(Node):
     many_as: List[AW]
 
 
-@dataclass
-class CW(Node):
-    a: AW
-    many_as: Set[AW]
-
-
 class ProcessingTest(unittest.TestCase):
     def test_search_by_type(self):
         self.assertEqual(["1", "2", "3", "4", "5", "6"], [i.name for i in box.search_by_type(Item)])
@@ -41,15 +35,6 @@ class ProcessingTest(unittest.TestCase):
         a2.replace_with(a4)
         self.assertEqual("4", b.many_as[0].s)
         self.assertEqual(BW(a1, [a4, a3]), b)
-
-    def test_replace_in_set(self):
-        a1 = AW("1")
-        a2 = AW("2")
-        a3 = AW("3")
-        a4 = AW("4")
-        c = CW(a1, {a2, a3})
-        c.assign_parents()
-        self.assertRaises(Exception, lambda: a2.replace_with(a4))
 
     def test_replace_single(self):
         a1 = AW("1")

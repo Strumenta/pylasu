@@ -20,7 +20,7 @@ def assert_asts_are_equal(
             case.fail(f"No property {expected_property.name} found at {context}")
         actual_prop_value = actual_property.value
         expected_prop_value = expected_property.value
-        if expected_property.provides_nodes:
+        if expected_property.is_containment:
             if expected_property.multiple:
                 assert_multi_properties_are_equal(
                     case, expected_property, expected_prop_value, actual_prop_value, context, consider_position)

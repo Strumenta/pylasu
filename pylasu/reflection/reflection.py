@@ -4,25 +4,30 @@ from typing import Callable
 
 
 def getannotations(cls):
-    import inspect
-    try:  # On Python 3.10+
-        return inspect.getannotations(cls)
+    try:
+        # https://peps.python.org/pep-0563/
+        return typing.get_type_hints(cls, globalns=None, localns=None)
     except AttributeError:
-        if isinstance(cls, type):
-            return cls.__dict__.get('__annotations__', None)
-        else:
-            return getattr(cls, '__annotations__', None)
+        try:
+            # On Python 3.10+
+            import inspect
+            return inspect.getannotations(cls)
+        except AttributeError:
+            if isinstance(cls, type):
+                return cls.__dict__.get('__annotations__', None)
+            else:
+                return getattr(cls, '__annotations__', None)
 
 
 def get_type_origin(tp):
+    origin = None
     if hasattr(typing, "get_origin"):
-        return typing.get_origin(tp)
+        origin = typing.get_origin(tp)
     elif hasattr(tp, "__origin__"):
-        return tp.__origin__
+        origin = tp.__origin__
     elif tp is typing.Generic:
-        return typing.Generic
-    else:
-        return None
+        origin = typing.Generic
+    return origin or (tp if isinstance(tp, type) else None)
 
 
 def is_enum_type(attr_type):

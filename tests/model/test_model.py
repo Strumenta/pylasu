@@ -2,8 +2,8 @@ import dataclasses
 import unittest
 from typing import List, Optional, Union
 
-from pylasu.model import Node, Position, Point
-from pylasu.model.reflection import Multiplicity
+from pylasu.model import Node, Position, Point, internal_field
+from pylasu.model.reflection import Multiplicity, PropertyDescription
 from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
 from pylasu.support import extension_method
 
@@ -13,12 +13,23 @@ class SomeNode(Node, Named):
     foo = 3
     bar: int = dataclasses.field(init=False)
     __private__ = 4
-    ref: Node = None
+    containment: Node = None
+    reference: ReferenceByName[Node] = None
     multiple: List[Node] = dataclasses.field(default_factory=list)
+    optional: Optional[Node] = None
     multiple_opt: List[Optional[Node]] = dataclasses.field(default_factory=list)
+    internal: Node = internal_field(default=None)
 
     def __post_init__(self):
         self.bar = 5
+
+@dataclasses.dataclass
+class ExtendedNode(SomeNode):
+    prop = 2
+    cont_fwd: "ExtendedNode" = None
+    cont_ref: ReferenceByName["ExtendedNode"] = None
+    multiple2: List[SomeNode] = dataclasses.field(default_factory=list)
+    internal2: Node = internal_field(default=None)
 
 
 @dataclasses.dataclass
@@ -37,6 +48,14 @@ class InvalidNode(Node):
     child: SomeNode
     invalid_prop: Union[Node, str] = None
     another_child: Node = None
+
+
+def require_feature(node, name) -> PropertyDescription:
+    return next(n for n in node.properties if n.name == name)
+
+
+def find_feature(node, name) -> Optional[PropertyDescription]:
+    return next((n for n in node.properties if n.name == name), None)
 
 
 class ModelTest(unittest.TestCase):
@@ -77,9 +96,29 @@ class ModelTest(unittest.TestCase):
 
     def test_node_properties(self):
         node = SomeNode("n").with_position(Position(Point(1, 0), Point(2, 1)))
-        self.assertIsNotNone(next(n for n in node.properties if n.name == 'foo'))
-        self.assertIsNotNone(next(n for n in node.properties if n.name == 'bar'))
-        self.assertIsNotNone(next(n for n in node.properties if n.name == "name"))
+        self.assertIsNotNone(find_feature(node, 'foo'))
+        self.assertFalse(find_feature(node, 'foo').is_containment)
+        self.assertIsNotNone(find_feature(node, 'bar'))
+        self.assertFalse(find_feature(node, 'bar').is_containment)
+        self.assertIsNotNone(find_feature(node, 'name'))
+        self.assertTrue(find_feature(node, 'containment').is_containment)
+        self.assertFalse(find_feature(node, 'containment').is_reference)
+        self.assertFalse(find_feature(node, 'reference').is_containment)
+        self.assertTrue(find_feature(node, 'reference').is_reference)
+        with self.assertRaises(StopIteration):
+            next(n for n in node.properties if n.name == '__private__')
+        with self.assertRaises(StopIteration):
+            next(n for n in node.properties if n.name == 'non_existent')
+        with self.assertRaises(StopIteration):
+            next(n for n in node.properties if n.name == 'properties')
+        with self.assertRaises(StopIteration):
+            next(n for n in node.properties if n.name == "origin")
+
+    def test_node_properties_inheritance(self):
+        node = ExtendedNode("n").with_position(Position(Point(1, 0), Point(2, 1)))
+        self.assertIsNotNone(find_feature(node, 'foo'))
+        self.assertIsNotNone(find_feature(node, 'bar'))
+        self.assertIsNotNone(find_feature(node, 'name'))
         with self.assertRaises(StopIteration):
             next(n for n in node.properties if n.name == '__private__')
         with self.assertRaises(StopIteration):
@@ -159,20 +198,52 @@ class ModelTest(unittest.TestCase):
             pass
 
         pds = [pd for pd in sorted(SomeNode.node_properties, key=lambda x: x.name)]
-        self.assertEqual(6, len(pds), f"{pds} should be 6")
+        self.assertEqual(8, len(pds), f"{pds} should be 7")
         self.assertEqual("bar", pds[0].name)
-        self.assertFalse(pds[0].provides_nodes)
-        self.assertEqual("foo", pds[1].name)
-        self.assertFalse(pds[1].provides_nodes)
-        self.assertEqual("multiple", pds[2].name)
-        self.assertTrue(pds[2].provides_nodes)
-        self.assertEqual(Multiplicity.MANY, pds[2].multiplicity)
-        self.assertEqual("multiple_opt", pds[3].name)
-        self.assertTrue(pds[3].provides_nodes)
+        self.assertFalse(pds[0].is_containment)
+        self.assertEqual("containment", pds[1].name)
+        self.assertTrue(pds[1].is_containment)
+        self.assertEqual("foo", pds[2].name)
+        self.assertFalse(pds[2].is_containment)
+        self.assertEqual("multiple", pds[3].name)
+        self.assertTrue(pds[3].is_containment)
         self.assertEqual(Multiplicity.MANY, pds[3].multiplicity)
-        self.assertEqual("name", pds[4].name)
-        self.assertFalse(pds[4].provides_nodes)
-        self.assertEqual("ref", pds[5].name)
-        self.assertTrue(pds[5].provides_nodes)
+        self.assertEqual("multiple_opt", pds[4].name)
+        self.assertTrue(pds[4].is_containment)
+        self.assertEqual(Multiplicity.MANY, pds[4].multiplicity)
+        self.assertEqual("name", pds[5].name)
+        self.assertFalse(pds[5].is_containment)
+        self.assertEqual("optional", pds[6].name)
+        self.assertTrue(pds[6].is_containment)
+        self.assertEqual(Multiplicity.OPTIONAL, pds[6].multiplicity)
+        self.assertEqual("reference", pds[7].name)
+        self.assertTrue(pds[7].is_reference)
+
+        self.assertRaises(Exception, lambda: [x for x in InvalidNode.node_properties])
+
+    def test_node_properties_meta_inheritance(self):
+        @extension_method(Node)
+        def frob_node_2(_: Node):
+            pass
+
+        pds = [pd for pd in sorted(ExtendedNode.node_properties, key=lambda x: x.name)]
+        self.assertEqual(12, len(pds), f"{pds} should be 7")
+        self.assertEqual("bar", pds[0].name)
+        self.assertFalse(pds[0].is_containment)
+        self.assertEqual("cont_fwd", pds[1].name)
+        self.assertTrue(pds[1].is_containment)
+        self.assertEqual(ExtendedNode, pds[1].type)
+        self.assertEqual("cont_ref", pds[2].name)
+        self.assertTrue(pds[2].is_reference)
+        self.assertEqual(ExtendedNode, pds[2].type)
+        self.assertEqual("containment", pds[3].name)
+        self.assertTrue(pds[3].is_containment)
+        self.assertEqual("foo", pds[4].name)
+        self.assertEqual("multiple", pds[5].name)
+        self.assertTrue(pds[5].is_containment)
+        self.assertEqual(Multiplicity.MANY, pds[5].multiplicity)
+        self.assertEqual("multiple2", pds[6].name)
+        self.assertTrue(pds[6].is_containment)
+        self.assertEqual(Multiplicity.MANY, pds[6].multiplicity)
 
         self.assertRaises(Exception, lambda: [x for x in InvalidNode.node_properties])
