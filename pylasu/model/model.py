@@ -96,6 +96,45 @@ def provides_nodes(decl_type):
         return isinstance(decl_type, type) and issubclass(decl_type, Node)
 
 
+def get_only_type_arg(decl_type):
+    type_args = get_type_arguments(decl_type)
+    if len(type_args) == 1:
+        return type_args[0]
+    else:
+        return None
+
+
+def process_annotated_property(name, decl_type, known_property_names):
+    multiplicity = Multiplicity.SINGULAR
+    is_reference = False
+    if get_type_origin(decl_type) is ReferenceByName:
+        decl_type = get_only_type_arg(decl_type) or decl_type
+        is_reference = True
+    if is_sequence_type(decl_type):
+        decl_type = get_only_type_arg(decl_type) or decl_type
+        multiplicity = Multiplicity.MANY
+    if get_type_origin(decl_type) is Union:
+        type_args = get_type_arguments(decl_type)
+        if len(type_args) == 1:
+            decl_type = type_args[0]
+        elif len(type_args) == 2:
+            if type_args[0] is type(None):
+                decl_type = type_args[1]
+            elif type_args[1] is type(None):
+                decl_type = type_args[0]
+            else:
+                raise Exception(f"Unsupported feature {name} of type {decl_type}")
+            if multiplicity == Multiplicity.SINGULAR:
+                multiplicity = Multiplicity.OPTIONAL
+        else:
+            raise Exception(f"Unsupported feature {name} of type {decl_type}")
+    if not isinstance(decl_type, type):
+        raise Exception(f"Unsupported feature {name} of type {decl_type}")
+    is_containment = provides_nodes(decl_type) and not is_reference
+    known_property_names.add(name)
+    return PropertyDescription(name, decl_type, is_containment, is_reference, multiplicity)
+
+
 class Concept(ABCMeta):
 
     def __init__(cls, what, bases=None, dict=None):
@@ -115,50 +154,12 @@ class Concept(ABCMeta):
             yield from cls._direct_node_properties(cl, names)
 
     def _direct_node_properties(cls, cl, known_property_names):
-        def get_type_arg(decl_type):
-            type_args = get_type_arguments(decl_type)
-            if len(type_args) == 1:
-                return type_args[0]
-            else:
-                return decl_type
-
         anns = getannotations(cl)
         if not anns:
             return
         for name in anns:
             if name not in known_property_names and cls.is_node_property(name):
-                is_containment = False
-                multiplicity = Multiplicity.SINGULAR
-                decl_type = None
-                is_reference = False
-                if name in anns:
-                    decl_type = anns[name]
-                    if get_type_origin(decl_type) is ReferenceByName:
-                        decl_type = get_type_arg(decl_type)
-                        is_reference = True
-                    if is_sequence_type(decl_type):
-                        decl_type = get_type_arg(decl_type)
-                        multiplicity = Multiplicity.MANY
-                    if get_type_origin(decl_type) is Union:
-                        type_args = get_type_arguments(decl_type)
-                        if len(type_args) == 1:
-                            decl_type = type_args[0]
-                        elif len(type_args) == 2:
-                            if type_args[0] is type(None):
-                                decl_type = type_args[1]
-                            elif type_args[1] is type(None):
-                                decl_type = type_args[0]
-                            else:
-                                raise Exception(f"Unsupported feature {name} of type {decl_type}")
-                            if multiplicity == Multiplicity.SINGULAR:
-                                multiplicity = Multiplicity.OPTIONAL
-                        else:
-                            raise Exception(f"Unsupported feature {name} of type {decl_type}")
-                    if not isinstance(decl_type, type):
-                        raise Exception(f"Unsupported feature {name} of type {decl_type}")
-                    is_containment = provides_nodes(decl_type) and not is_reference
-                known_property_names.add(name)
-                yield PropertyDescription(name, decl_type, is_containment, is_reference, multiplicity)
+                yield process_annotated_property(name, anns[name], known_property_names)
         for name in dir(cl):
             if name not in known_property_names and cls.is_node_property(name):
                 known_property_names.add(name)
@@ -211,7 +212,8 @@ class Node(Origin, Destination, metaclass=Concept):
 
     @internal_property
     def properties(self):
-        return (PropertyDescription(p.name, p.type, p.is_containment, p.is_reference, p.multiplicity, getattr(self, p.name))
+        return (PropertyDescription(p.name, p.type, p.is_containment, p.is_reference, p.multiplicity,
+                                    getattr(self, p.name))
                 for p in self.__class__.node_properties)
 
     @internal_property
