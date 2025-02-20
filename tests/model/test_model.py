@@ -27,10 +27,16 @@ class SomeNode(Node, Named):
 @dataclasses.dataclass
 class ExtendedNode(SomeNode):
     prop = 2
-    cont_fwd: "ExtendedNode" = None
-    cont_ref: ReferenceByName["ExtendedNode"] = None
+    cont_fwd: "ForwardReferencedNode" = None
+    cont_ref: ReferenceByName["ForwardReferencedNode"] = None
     multiple2: List[SomeNode] = dataclasses.field(default_factory=list)
+    multiple_fwd: List["ForwardReferencedNode"] = dataclasses.field(default_factory=list)
     internal2: Node = internal_field(default=None)
+
+
+@dataclasses.dataclass
+class ForwardReferencedNode(Node):
+    pass
 
 
 @dataclasses.dataclass
@@ -228,15 +234,15 @@ class ModelTest(unittest.TestCase):
             pass
 
         pds = [pd for pd in sorted(ExtendedNode.node_properties, key=lambda x: x.name)]
-        self.assertEqual(12, len(pds), f"{pds} should be 7")
+        self.assertEqual(13, len(pds), f"{pds} should be 7")
         self.assertEqual("bar", pds[0].name)
         self.assertFalse(pds[0].is_containment)
         self.assertEqual("cont_fwd", pds[1].name)
         self.assertTrue(pds[1].is_containment)
-        self.assertEqual(ExtendedNode, pds[1].type)
+        self.assertEqual(ForwardReferencedNode, pds[1].type)
         self.assertEqual("cont_ref", pds[2].name)
         self.assertTrue(pds[2].is_reference)
-        self.assertEqual(ExtendedNode, pds[2].type)
+        self.assertEqual(ForwardReferencedNode, pds[2].type)
         self.assertEqual("containment", pds[3].name)
         self.assertTrue(pds[3].is_containment)
         self.assertEqual("foo", pds[4].name)
@@ -246,5 +252,9 @@ class ModelTest(unittest.TestCase):
         self.assertEqual("multiple2", pds[6].name)
         self.assertTrue(pds[6].is_containment)
         self.assertEqual(Multiplicity.MANY, pds[6].multiplicity)
+        self.assertEqual("multiple_fwd", pds[7].name)
+        self.assertTrue(pds[7].is_containment)
+        self.assertEqual(ForwardReferencedNode, pds[7].type)
+        self.assertEqual(Multiplicity.MANY, pds[7].multiplicity)
 
         self.assertRaises(Exception, lambda: [x for x in InvalidNode.node_properties])
