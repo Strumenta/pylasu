@@ -97,6 +97,7 @@ def provides_nodes(decl_type):
 
 
 def get_only_type_arg(decl_type):
+    """If decl_type has a single type argument, return it, otherwise return None"""
     type_args = get_type_arguments(decl_type)
     if len(type_args) == 1:
         return type_args[0]
@@ -212,8 +213,9 @@ class Node(Origin, Destination, metaclass=Concept):
 
     @internal_property
     def properties(self):
-        return (PropertyDescription(p.name, p.type, p.is_containment, p.is_reference, p.multiplicity,
-                                    getattr(self, p.name))
+        return (PropertyDescription(p.name, p.type,
+                                    is_containment=p.is_containment, is_reference=p.is_reference,
+                                    multiplicity=p.multiplicity, value=getattr(self, p.name))
                 for p in self.__class__.node_properties)
 
     @internal_property
