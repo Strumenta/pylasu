@@ -1,5 +1,6 @@
 import enum
 from dataclasses import dataclass
+from typing import Optional
 
 
 class Multiplicity(enum.Enum):
@@ -11,7 +12,9 @@ class Multiplicity(enum.Enum):
 @dataclass
 class PropertyDescription:
     name: str
-    provides_nodes: bool
+    type: Optional[type]
+    is_containment: bool
+    is_reference: bool
     multiplicity: Multiplicity = Multiplicity.SINGULAR
     value: object = None
 

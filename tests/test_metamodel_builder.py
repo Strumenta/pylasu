@@ -118,7 +118,7 @@ class MetamodelBuilderTest(unittest.TestCase):
             next((a for a in box.eClass.eAllAttributes() if a.name == "name"), None))
         self.assertIsNotNone(
             next((a for a in box.eClass.eAllAttributes() if a.name == "strength"), None))
-        self.assertEqual(2, len(box.eClass.eAllAttributes()))
+        self.assertEqual(3, len(box.eClass.eAllAttributes()))
 
 
 STARLASU_MODEL_JSON = '''{

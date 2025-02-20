@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod, ABCMeta
 from dataclasses import Field, MISSING, dataclass, field
 from typing import Optional, Callable, List, Union
 
+from .naming import ReferenceByName
 from .position import Position, Source
 from .reflection import Multiplicity, PropertyDescription
 from ..reflection import getannotations, get_type_arguments, is_sequence_type
@@ -95,13 +96,57 @@ def provides_nodes(decl_type):
         return isinstance(decl_type, type) and issubclass(decl_type, Node)
 
 
+def get_only_type_arg(decl_type):
+    """If decl_type has a single type argument, return it, otherwise return None"""
+    type_args = get_type_arguments(decl_type)
+    if len(type_args) == 1:
+        return type_args[0]
+    else:
+        return None
+
+
+def process_annotated_property(name, decl_type, known_property_names):
+    multiplicity = Multiplicity.SINGULAR
+    is_reference = False
+    if get_type_origin(decl_type) is ReferenceByName:
+        decl_type = get_only_type_arg(decl_type) or decl_type
+        is_reference = True
+    if is_sequence_type(decl_type):
+        decl_type = get_only_type_arg(decl_type) or decl_type
+        multiplicity = Multiplicity.MANY
+    if get_type_origin(decl_type) is Union:
+        type_args = get_type_arguments(decl_type)
+        if len(type_args) == 1:
+            decl_type = type_args[0]
+        elif len(type_args) == 2:
+            if type_args[0] is type(None):
+                decl_type = type_args[1]
+            elif type_args[1] is type(None):
+                decl_type = type_args[0]
+            else:
+                raise Exception(f"Unsupported feature {name} of type {decl_type}")
+            if multiplicity == Multiplicity.SINGULAR:
+                multiplicity = Multiplicity.OPTIONAL
+        else:
+            raise Exception(f"Unsupported feature {name} of type {decl_type}")
+    if not isinstance(decl_type, type):
+        raise Exception(f"Unsupported feature {name} of type {decl_type}")
+    is_containment = provides_nodes(decl_type) and not is_reference
+    known_property_names.add(name)
+    return PropertyDescription(name, decl_type, is_containment, is_reference, multiplicity)
+
+
 class Concept(ABCMeta):
 
     def __init__(cls, what, bases=None, dict=None):
         super().__init__(what, bases, dict)
-        cls.__internal_properties__ = \
-            (["origin", "destination", "parent", "position", "position_override"]
-             + [n for n, v in inspect.getmembers(cls, is_internal_property_or_method)])
+        cls.__internal_properties__ = []
+        for base in bases:
+            if hasattr(base, "__internal_properties__"):
+                cls.__internal_properties__.extend(base.__internal_properties__)
+        if not cls.__internal_properties__:
+            cls.__internal_properties__ = ["origin", "destination", "parent", "position", "position_override"]
+        cls.__internal_properties__.extend([n for n, v in inspect.getmembers(cls, is_internal_property_or_method)])
 
     @property
     def node_properties(cls):
@@ -115,23 +160,11 @@ class Concept(ABCMeta):
             return
         for name in anns:
             if name not in known_property_names and cls.is_node_property(name):
-                is_child_property = False
-                multiplicity = Multiplicity.SINGULAR
-                if name in anns:
-                    decl_type = anns[name]
-                    if is_sequence_type(decl_type):
-                        multiplicity = Multiplicity.MANY
-                        type_args = get_type_arguments(decl_type)
-                        if len(type_args) == 1:
-                            is_child_property = provides_nodes(type_args[0])
-                    else:
-                        is_child_property = provides_nodes(decl_type)
-                known_property_names.add(name)
-                yield PropertyDescription(name, is_child_property, multiplicity)
+                yield process_annotated_property(name, anns[name], known_property_names)
         for name in dir(cl):
             if name not in known_property_names and cls.is_node_property(name):
                 known_property_names.add(name)
-                yield PropertyDescription(name, False)
+                yield PropertyDescription(name, None, False, False)
 
     def is_node_property(cls, name):
         return not name.startswith('_') and name not in cls.__internal_properties__
@@ -180,7 +213,9 @@ class Node(Origin, Destination, metaclass=Concept):
 
     @internal_property
     def properties(self):
-        return (PropertyDescription(p.name, p.provides_nodes, p.multiplicity, getattr(self, p.name))
+        return (PropertyDescription(p.name, p.type,
+                                    is_containment=p.is_containment, is_reference=p.is_reference,
+                                    multiplicity=p.multiplicity, value=getattr(self, p.name))
                 for p in self.__class__.node_properties)
 
     @internal_property

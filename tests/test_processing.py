@@ -1,6 +1,6 @@
 import unittest
 from dataclasses import dataclass
-from typing import List, Set
+from typing import List
 
 from pylasu.model import Node
 from tests.fixtures import box, Item
@@ -15,12 +15,6 @@ class AW(Node):
 class BW(Node):
     a: AW
     many_as: List[AW]
-
-
-@dataclass
-class CW(Node):
-    a: AW
-    many_as: Set[AW]
 
 
 class ProcessingTest(unittest.TestCase):
@@ -41,15 +35,6 @@ class ProcessingTest(unittest.TestCase):
         a2.replace_with(a4)
         self.assertEqual("4", b.many_as[0].s)
         self.assertEqual(BW(a1, [a4, a3]), b)
-
-    def test_replace_in_set(self):
-        a1 = AW("1")
-        a2 = AW("2")
-        a3 = AW("3")
-        a4 = AW("4")
-        c = CW(a1, {a2, a3})
-        c.assign_parents()
-        self.assertRaises(Exception, lambda: a2.replace_with(a4))
 
     def test_replace_single(self):
         a1 = AW("1")
