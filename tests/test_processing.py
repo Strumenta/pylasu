@@ -1,6 +1,6 @@
 import unittest
 from dataclasses import dataclass
-from typing import List, Set
+from typing import List
 
 from pylasu.model import Node
 from tests.fixtures import box, Item

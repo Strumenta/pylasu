@@ -23,6 +23,7 @@ class SomeNode(Node, Named):
     def __post_init__(self):
         self.bar = 5
 
+
 @dataclasses.dataclass
 class ExtendedNode(SomeNode):
     prop = 2
