@@ -6,12 +6,6 @@
 
 Pylasu is an AST Library in the [StarLasu](https://github.com/Strumenta/StarLasu) family, targeting the Python language. [Documentation](https://pylasu.readthedocs.io) is on Read the Docs.
 
-## Testing
-
-```shell
-python -m unittest discover tests 
-```
-
 ## Linting
 
 ```shell
@@ -37,7 +31,7 @@ pip install build twine
 Then, check the project can be released by linting and running the test suite:
 
 ```shell
-flake8 . && flake8 tests
+flake8 . && flake8 tests --config tests/.flake8  
 pytest tests
 ```
 
