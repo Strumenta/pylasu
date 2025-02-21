@@ -2,6 +2,16 @@
 All notable changes to this project from version 0.4.0 upwards are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.8.1] – 2025-02-21
+
+### Added
+- More reflection to support PEP-0563 in a Cython environment
+
+## [0.8.0] – 2025-02-20
+
+### Added
+- Support for string-encoded types (PEP-0563)
+
 ## [0.7.3] – 2025-01-13
 
 ### Changed
