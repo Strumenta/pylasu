@@ -1,4 +1,7 @@
+import dataclasses
 import inspect
+import sys
+import typing
 from abc import ABC, abstractmethod, ABCMeta
 from dataclasses import Field, MISSING, dataclass, field
 from typing import Optional, Callable, List, Union
@@ -6,8 +9,10 @@ from typing import Optional, Callable, List, Union
 from .naming import ReferenceByName
 from .position import Position, Source
 from .reflection import Multiplicity, PropertyDescription
-from ..reflection import getannotations, get_type_arguments, is_sequence_type
+from ..reflection import get_type_annotations, get_type_arguments, is_sequence_type
 from ..reflection.reflection import get_type_origin
+
+PYLASU_FEATURE = "pylasu_feature"
 
 
 class internal_property(property):
@@ -38,6 +43,24 @@ def internal_field(
         return InternalField(default, default_factory, init, repr, hash, compare, metadata, kw_only)
     except TypeError:
         return InternalField(default, default_factory, init, repr, hash, compare, metadata)
+
+
+def node_property(default=MISSING):
+    description = PropertyDescription(
+        "", None,
+        multiplicity=Multiplicity.OPTIONAL if default is None else Multiplicity.SINGULAR)
+    return field(default=default, metadata={PYLASU_FEATURE: description})
+
+
+def node_containment(multiplicity: Multiplicity = Multiplicity.SINGULAR):
+    description = PropertyDescription("", None, is_containment=True, multiplicity=multiplicity)
+
+    if multiplicity == Multiplicity.SINGULAR:
+        return field(metadata={PYLASU_FEATURE: description})
+    elif multiplicity == Multiplicity.OPTIONAL:
+        return field(default=None, metadata={PYLASU_FEATURE: description})
+    elif multiplicity == Multiplicity.MANY:
+        return field(default_factory=list, metadata={PYLASU_FEATURE: description})
 
 
 class Origin(ABC):
@@ -105,15 +128,58 @@ def get_only_type_arg(decl_type):
         return None
 
 
-def process_annotated_property(name, decl_type, known_property_names):
-    multiplicity = Multiplicity.SINGULAR
-    is_reference = False
+def process_annotated_property(cl: type, name: str, decl_type):
+    try:
+        fields = dataclasses.fields(cl)
+    except TypeError:
+        fields = tuple()
+    for field in fields:
+        if field.name == name and PYLASU_FEATURE in field.metadata:
+            feature = field.metadata[PYLASU_FEATURE]
+            feature.name = name
+            if isinstance(decl_type, type):
+                feature.type = decl_type
+            elif type(field.type) is str:
+                feature.type = try_to_resolve_string_type(field.type, name, cl)
+            return feature
+    return compute_feature_from_annotation(cl, name, decl_type)
+
+
+def compute_feature_from_annotation(cl, name, decl_type):
+    feature = PropertyDescription(name, None, False, False, Multiplicity.SINGULAR)
+    decl_type = try_to_resolve_type(decl_type, feature)
+    if not isinstance(decl_type, type):
+        fwref = None
+        if hasattr(typing, "ForwardRef"):
+            fwref = typing.ForwardRef
+        if fwref and isinstance(decl_type, fwref):
+            raise Exception(f"Feature {name}'s type is unresolved forward reference {decl_type}, "
+                            f"please use node_containment or node_property")
+        elif type(decl_type) is str:
+            decl_type = try_to_resolve_string_type(decl_type, name, cl)
+        if not isinstance(decl_type, type):
+            raise Exception(f"Unsupported feature {name} of type {decl_type}")
+    feature.type = decl_type
+    feature.is_containment = provides_nodes(decl_type) and not feature.is_reference
+    return feature
+
+
+def try_to_resolve_string_type(decl_type, name, cl):
+    try:
+        ns = getattr(sys.modules.get(cl.__module__, None), '__dict__', globals())
+        decl_type = ns[decl_type]
+    except KeyError:
+        raise Exception(f"Unsupported feature {name} of unknown type {decl_type}")
+    return decl_type
+
+
+def try_to_resolve_type(decl_type, feature):
     if get_type_origin(decl_type) is ReferenceByName:
         decl_type = get_only_type_arg(decl_type) or decl_type
-        is_reference = True
+        feature.is_reference = True
     if is_sequence_type(decl_type):
         decl_type = get_only_type_arg(decl_type) or decl_type
-        multiplicity = Multiplicity.MANY
+        feature.multiplicity = Multiplicity.MANY
     if get_type_origin(decl_type) is Union:
         type_args = get_type_arguments(decl_type)
         if len(type_args) == 1:
@@ -124,16 +190,12 @@ def process_annotated_property(name, decl_type, known_property_names):
             elif type_args[1] is type(None):
                 decl_type = type_args[0]
             else:
-                raise Exception(f"Unsupported feature {name} of type {decl_type}")
-            if multiplicity == Multiplicity.SINGULAR:
-                multiplicity = Multiplicity.OPTIONAL
+                raise Exception(f"Unsupported feature {feature.name} of union type {decl_type}")
+            if feature.multiplicity == Multiplicity.SINGULAR:
+                feature.multiplicity = Multiplicity.OPTIONAL
         else:
-            raise Exception(f"Unsupported feature {name} of type {decl_type}")
-    if not isinstance(decl_type, type):
-        raise Exception(f"Unsupported feature {name} of type {decl_type}")
-    is_containment = provides_nodes(decl_type) and not is_reference
-    known_property_names.add(name)
-    return PropertyDescription(name, decl_type, is_containment, is_reference, multiplicity)
+            raise Exception(f"Unsupported feature {feature.name} of union type {decl_type}")
+    return decl_type
 
 
 class Concept(ABCMeta):
@@ -155,16 +217,21 @@ class Concept(ABCMeta):
             yield from cls._direct_node_properties(cl, names)
 
     def _direct_node_properties(cls, cl, known_property_names):
-        anns = getannotations(cl)
+        if not isinstance(cls, Concept):
+            return
+        anns = get_type_annotations(cl)
         if not anns:
             return
         for name in anns:
             if name not in known_property_names and cls.is_node_property(name):
-                yield process_annotated_property(name, anns[name], known_property_names)
+                feature = process_annotated_property(cl, name, anns[name])
+                known_property_names.add(name)
+                yield feature
         for name in dir(cl):
             if name not in known_property_names and cls.is_node_property(name):
+                feature = PropertyDescription(name, None, False, False)
                 known_property_names.add(name)
-                yield PropertyDescription(name, None, False, False)
+                yield feature
 
     def is_node_property(cls, name):
         return not name.startswith('_') and name not in cls.__internal_properties__

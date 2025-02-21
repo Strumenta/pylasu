@@ -10,7 +10,7 @@ from pylasu.StrumentaLanguageSupport import ASTNode
 from pylasu.emf.model import find_eclassifier
 from pylasu.model import Node
 from pylasu.model.model import InternalField
-from pylasu.reflection import getannotations
+from pylasu.reflection import get_type_annotations
 from pylasu.reflection.reflection import get_type_origin, is_enum_type, is_sequence_type, get_type_arguments
 
 
@@ -91,7 +91,7 @@ class MetamodelBuilder:
         return bases
 
     def setup_attributes(self, cls):
-        anns = getannotations(cls)
+        anns = get_type_annotations(cls)
         nmspc = {
             "position": EReference("position", starlasu.Position, containment=True)
         }

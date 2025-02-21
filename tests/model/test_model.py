@@ -3,6 +3,7 @@ import unittest
 from typing import List, Optional, Union
 
 from pylasu.model import Node, Position, Point, internal_field
+from pylasu.model.model import node_property, node_containment
 from pylasu.model.reflection import Multiplicity, PropertyDescription
 from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
 from pylasu.support import extension_method
@@ -32,6 +33,8 @@ class ExtendedNode(SomeNode):
     multiple2: List[SomeNode] = dataclasses.field(default_factory=list)
     multiple_fwd: List["ForwardReferencedNode"] = dataclasses.field(default_factory=list)
     internal2: Node = internal_field(default=None)
+    explicit_property: str = node_property("42")
+    explicit_containment: "ExtendedNode" = node_containment(Multiplicity.MANY)
 
 
 @dataclasses.dataclass
@@ -234,7 +237,7 @@ class ModelTest(unittest.TestCase):
             pass
 
         pds = [pd for pd in sorted(ExtendedNode.node_properties, key=lambda x: x.name)]
-        self.assertEqual(13, len(pds), f"{pds} should be 7")
+        self.assertEqual(15, len(pds), f"{pds}")
         self.assertEqual("bar", pds[0].name)
         self.assertFalse(pds[0].is_containment)
         self.assertEqual("cont_fwd", pds[1].name)
@@ -245,16 +248,23 @@ class ModelTest(unittest.TestCase):
         self.assertEqual(ForwardReferencedNode, pds[2].type)
         self.assertEqual("containment", pds[3].name)
         self.assertTrue(pds[3].is_containment)
-        self.assertEqual("foo", pds[4].name)
-        self.assertEqual("multiple", pds[5].name)
-        self.assertTrue(pds[5].is_containment)
-        self.assertEqual(Multiplicity.MANY, pds[5].multiplicity)
-        self.assertEqual("multiple2", pds[6].name)
-        self.assertTrue(pds[6].is_containment)
-        self.assertEqual(Multiplicity.MANY, pds[6].multiplicity)
-        self.assertEqual("multiple_fwd", pds[7].name)
+        self.assertEqual("explicit_containment", pds[4].name)
+        self.assertTrue(pds[4].is_containment)
+        self.assertEqual(ExtendedNode, pds[4].type)
+        self.assertEqual(Multiplicity.MANY, pds[4].multiplicity)
+        self.assertEqual("explicit_property", pds[5].name)
+        self.assertEqual(str, pds[5].type)
+        self.assertEqual(Multiplicity.SINGULAR, pds[5].multiplicity)
+        self.assertEqual("foo", pds[6].name)
+        self.assertEqual("multiple", pds[7].name)
         self.assertTrue(pds[7].is_containment)
-        self.assertEqual(ForwardReferencedNode, pds[7].type)
         self.assertEqual(Multiplicity.MANY, pds[7].multiplicity)
+        self.assertEqual("multiple2", pds[8].name)
+        self.assertTrue(pds[8].is_containment)
+        self.assertEqual(Multiplicity.MANY, pds[8].multiplicity)
+        self.assertEqual("multiple_fwd", pds[9].name)
+        self.assertTrue(pds[9].is_containment)
+        self.assertEqual(ForwardReferencedNode, pds[9].type)
+        self.assertEqual(Multiplicity.MANY, pds[9].multiplicity)
 
         self.assertRaises(Exception, lambda: [x for x in InvalidNode.node_properties])

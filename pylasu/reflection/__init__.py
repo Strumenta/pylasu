@@ -1,1 +1,1 @@
-from .reflection import getannotations, get_type_arguments, is_sequence_type
+from .reflection import get_type_annotations, get_type_arguments, is_sequence_type

@@ -13,8 +13,8 @@ class Multiplicity(enum.Enum):
 class PropertyDescription:
     name: str
     type: Optional[type]
-    is_containment: bool
-    is_reference: bool
+    is_containment: bool = False
+    is_reference: bool = False
     multiplicity: Multiplicity = Multiplicity.SINGULAR
     value: object = None
 
