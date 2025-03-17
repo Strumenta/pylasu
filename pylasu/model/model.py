@@ -133,14 +133,15 @@ def process_annotated_property(cl: type, name: str, decl_type):
         fields = dataclasses.fields(cl)
     except TypeError:
         fields = tuple()
-    for field in fields:
-        if field.name == name and PYLASU_FEATURE in field.metadata:
-            feature = field.metadata[PYLASU_FEATURE]
+    # We do not name it field to avoid shadowing the imported field
+    for local_field in fields:
+        if local_field.name == name and PYLASU_FEATURE in local_field.metadata:
+            feature = local_field.metadata[PYLASU_FEATURE]
             feature.name = name
             if isinstance(decl_type, type):
                 feature.type = decl_type
-            elif type(field.type) is str:
-                feature.type = try_to_resolve_string_type(field.type, name, cl)
+            elif type(local_field.type) is str:
+                feature.type = try_to_resolve_string_type(local_field.type, name, cl)
             return feature
     return compute_feature_from_annotation(cl, name, decl_type)
 
