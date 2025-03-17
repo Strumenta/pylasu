@@ -37,11 +37,22 @@ func_def = ast.FunctionDef(
 #
 
 @click.command()
+@click.argument("dependencies", nargs=-1, type=click.Path(exists=True, dir_okay=False, readable=True))
 @click.argument("lionweb-language", type=click.Path(exists=True, dir_okay=False, readable=True))
 @click.argument("output", type=click.Path(exists=False, file_okay=False, writable=True))
-def main(lionweb_language, output):
+def main(dependencies, lionweb_language, output):
     """Simple CLI that processes a file and writes results to a directory."""
     serialization = SerializationProvider.get_standard_json_serialization(LionWebVersion.V2023_1)
+
+    for dep in dependencies:
+        click.echo(f"Processing dependency {dep}")
+        with open(dep, "r", encoding="utf-8") as f:
+            content = f.read()
+            language = cast(Language, serialization.deserialize_string_to_nodes(content)[0])
+            serialization.register_language(language=language)
+            serialization.classifier_resolver.register_language(language)
+            serialization.classifier_resolver.resolve_classifier(language)
+
     click.echo(f"📄 Processing file: {lionweb_language}")
     with open(lionweb_language, "r", encoding="utf-8") as f:
         content = f.read()
