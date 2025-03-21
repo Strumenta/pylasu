@@ -86,6 +86,16 @@ def main(dependencies, lionweb_language, output):
         names=[ast.alias(name='dataclass', asname=None)],
         level=0
     )
+    import_enum = ast.ImportFrom(
+        module="enum",
+        names=[ast.alias(name="Enum", asname=None)],
+        level=0
+    )
+    import_typing = ast.ImportFrom(
+        module='typing',
+        names=[ast.alias(name='Optional', asname=None)],
+        level=0
+    )
     import_starlasu = ast.ImportFrom(
         module='pylasu.model.metamodel',
         names=[ast.alias(name='Expression', asname='StarLasuExpression'),
@@ -104,7 +114,7 @@ def main(dependencies, lionweb_language, output):
         names=[ast.alias(name='Node', asname=None)],
         level=0
     )
-    module = ast.Module(body=[import_abc, import_dataclass, import_starlasu, import_node], type_ignores=[])
+    module = ast.Module(body=[import_abc, import_dataclass, import_typing, import_enum, import_starlasu, import_node], type_ignores=[])
 
 
     for element in language.get_elements():
@@ -115,7 +125,22 @@ def main(dependencies, lionweb_language, output):
         elif isinstance(element, PrimitiveType):
             pass
         elif isinstance(element, Enumeration):
-            pass
+            members = [
+                ast.Assign(
+                    targets=[ast.Name(id=literal.get_name(), ctx=ast.Store())],
+                    value=ast.Constant(value=literal.get_name())
+                )
+                for literal in element.get_literals()
+            ]
+
+            enum_class = ast.ClassDef(
+                name=element.get_name(),
+                bases=[ast.Name(id="Enum", ctx=ast.Load())],
+                keywords=[],
+                body=members,
+                decorator_list=[]
+            )
+            module.body.append(enum_class)
         else:
             raise ValueError(f"Unsupported {element}")
 
@@ -162,9 +187,14 @@ def main(dependencies, lionweb_language, output):
                     field_name = feature.get_name()
                     if field_name in keyword.kwlist:
                         field_name = f"{field_name}_"
+                    type = feature.get_type().get_name()
+                    if feature.is_multiple():
+                        type = f"List[{type}]"
+                    elif feature.is_optional():
+                        type = f"Optional[{type}]"
                     field = ast.AnnAssign(
                         target=ast.Name(id=field_name, ctx=ast.Store()),
-                        annotation=ast.Constant(value=feature.get_type().get_name()),
+                        annotation=ast.Constant(value=type),
                         value=None,
                         simple=1,
                     )
@@ -172,9 +202,37 @@ def main(dependencies, lionweb_language, output):
                         classdef.body = []
                     classdef.body.append(field)
                 elif isinstance(feature, Reference):
-                    pass
+                    field_name = feature.get_name()
+                    if field_name in keyword.kwlist:
+                        field_name = f"{field_name}_"
+                    type = f"ReferenceByName[{feature.get_type().get_name()}]"
+                    if feature.is_optional():
+                        type = f"Optional[{type}]"
+                    field = ast.AnnAssign(
+                        target=ast.Name(id=field_name, ctx=ast.Store()),
+                        annotation=ast.Constant(value=type),
+                        value=None,
+                        simple=1,
+                    )
+                    if len(classdef.body) == 1 and isinstance(classdef.body[0], ast.Pass):
+                        classdef.body = []
+                    classdef.body.append(field)
                 elif isinstance(feature, Property):
-                    pass
+                    field_name = feature.get_name()
+                    if field_name in keyword.kwlist:
+                        field_name = f"{field_name}_"
+                    type = feature.get_type().get_name()
+                    if feature.is_optional():
+                        type = f"Optional[{type}]"
+                    field = ast.AnnAssign(
+                        target=ast.Name(id=field_name, ctx=ast.Store()),
+                        annotation=ast.Constant(value=type),
+                        value=None,
+                        simple=1,
+                    )
+                    if len(classdef.body) == 1 and isinstance(classdef.body[0], ast.Pass):
+                        classdef.body = []
+                    classdef.body.append(field)
                 else:
                     raise ValueError()
 
