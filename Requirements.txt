@@ -5,7 +5,7 @@ charset-normalizer==3.4.1
 click==8.1.8
 flake8==7.1.2
 idna==3.10
-lionweb-python==0.1.8
+lionweb-python==0.1.14
 mccabe==0.7.0
 pycodestyle==2.12.1
 pyflakes==3.2.0
