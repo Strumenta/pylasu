@@ -1,17 +1,15 @@
 import ast
 import keyword
 from pathlib import Path
-from typing import cast, List, Dict
+from typing import List, Dict
 
-import astor  # Install with `pip install astor`
-import click
+import astor
 from lionwebpython.language import Language, Concept, Interface, Containment, Property
 from lionwebpython.language.classifier import Classifier
 from lionwebpython.language.enumeration import Enumeration
 from lionwebpython.language.primitive_type import PrimitiveType
 from lionwebpython.language.reference import Reference
 from lionwebpython.lionweb_version import LionWebVersion
-from lionwebpython.serialization.serialization_provider import SerializationProvider
 
 from pylasu.lionweb.starlasu import StarLasuBaseLanguage
 
@@ -54,28 +52,7 @@ def topological_classifiers_sort(classifiers: List[Classifier]) -> List[Classifi
 
     return sorted_list
 
-@click.command()
-@click.argument("dependencies", nargs=-1, type=click.Path(exists=True, dir_okay=False, readable=True))
-@click.argument("lionweb-language", type=click.Path(exists=True, dir_okay=False, readable=True))
-@click.argument("output", type=click.Path(exists=False, file_okay=False, writable=True))
-def main(dependencies, lionweb_language, output):
-    """Simple CLI that processes a file and writes results to a directory."""
-    serialization = SerializationProvider.get_standard_json_serialization(LionWebVersion.V2023_1)
-
-    for dep in dependencies:
-        click.echo(f"Processing dependency {dep}")
-        with open(dep, "r", encoding="utf-8") as f:
-            content = f.read()
-            language = cast(Language, serialization.deserialize_string_to_nodes(content)[0])
-            serialization.register_language(language=language)
-            serialization.classifier_resolver.register_language(language)
-            serialization.instance_resolver.add_tree(language)
-
-    click.echo(f"📄 Processing file: {lionweb_language}")
-    with open(lionweb_language, "r", encoding="utf-8") as f:
-        content = f.read()
-        language = cast(Language, serialization.deserialize_string_to_nodes(content)[0])
-
+def ast_generation(click, language: Language, output):
     import_abc = ast.ImportFrom(
         module='abc',
         names=[ast.alias(name='ABC', asname=None)],
@@ -114,8 +91,8 @@ def main(dependencies, lionweb_language, output):
         names=[ast.alias(name='Node', asname=None)],
         level=0
     )
-    module = ast.Module(body=[import_abc, import_dataclass, import_typing, import_enum, import_starlasu, import_node], type_ignores=[])
-
+    module = ast.Module(body=[import_abc, import_dataclass, import_typing, import_enum, import_starlasu, import_node],
+                        type_ignores=[])
 
     for element in language.get_elements():
         if isinstance(element, Concept):
@@ -178,9 +155,9 @@ def main(dependencies, lionweb_language, output):
                 bases.append('ABC')
             dataclass_decorator = ast.Name(id="dataclass", ctx=ast.Load())
             classdef = ast.ClassDef(classifier.get_name(), bases=bases,
-                keywords=[],
-                body=[ast.Pass()],
-                decorator_list=[dataclass_decorator])
+                                    keywords=[],
+                                    body=[ast.Pass()],
+                                    decorator_list=[dataclass_decorator])
 
             for feature in classifier.get_features():
                 if isinstance(feature, Containment):
@@ -238,25 +215,22 @@ def main(dependencies, lionweb_language, output):
 
             module.body.append(classdef)
         elif isinstance(classifier, Interface):
-            bases=[]
+            bases = []
             if len(classifier.get_extended_interfaces()) == 0:
                 bases.append("Node")
                 bases.append("ABC")
 
             classdef = ast.ClassDef(classifier.get_name(), bases=bases,
-                keywords=[],
-                body=[ast.Pass()],
-                decorator_list=[])
+                                    keywords=[],
+                                    body=[ast.Pass()],
+                                    decorator_list=[])
             module.body.append(classdef)
         else:
             raise ValueError()
 
-    click.echo(f"📂 Saving results to: {output}")
+    click.echo(f"📂 Saving ast to: {output}")
     generated_code = astor.to_source(module)
     output_path = Path(output)
     output_path.mkdir(parents=True, exist_ok=True)
     with Path(f"{output}/ast.py").open("w", encoding="utf-8") as f:
         f.write(generated_code)
-
-if __name__ == "__main__":
-    main()
