@@ -12,6 +12,7 @@ from lionwebpython.language.reference import Reference
 from lionwebpython.lionweb_version import LionWebVersion
 
 from pylasu.lionweb.starlasu import StarLasuBaseLanguage
+from pylasu.lionweb.utils import calculate_field_name
 
 
 def topological_classifiers_sort(classifiers: List[Classifier]) -> List[Classifier]:
@@ -161,9 +162,7 @@ def ast_generation(click, language: Language, output):
 
             for feature in classifier.get_features():
                 if isinstance(feature, Containment):
-                    field_name = feature.get_name()
-                    if field_name in keyword.kwlist:
-                        field_name = f"{field_name}_"
+                    field_name = calculate_field_name(feature)
                     type = feature.get_type().get_name()
                     if feature.is_multiple():
                         type = f"List[{type}]"
