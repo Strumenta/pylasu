@@ -5,6 +5,9 @@ from lionwebpython.language.lioncore_builtins import LionCoreBuiltins
 from lionwebpython.language.primitive_type import PrimitiveType
 from lionwebpython.lionweb_version import LionWebVersion
 
+from pylasu.model import Point, Position
+
+
 class StarLasuBaseLanguage(Language):
     if TYPE_CHECKING:
         from lionwebpython.language.concept import Concept
@@ -70,3 +73,11 @@ class StarLasuBaseLanguage(Language):
             cls._instances[lion_web_version] = StarLasuBaseLanguage(lion_web_version)
 
         return cls._instances[lion_web_version]
+
+def position_deserializer(serialized_value, is_required):
+    parts = serialized_value.split("-")
+    start_coordinates = parts[0].split(":")
+    start = Point(int(start_coordinates[0][1:]), int(start_coordinates[1]))
+    end_coordinates = parts[1].split(":")
+    end = Point(int(end_coordinates[0][1:]), int(end_coordinates[1]))
+    return Position(start, end)

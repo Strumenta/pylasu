@@ -12,7 +12,7 @@ authors = [
 ]
 description = "Pylasu is an AST Library in the StarLasu family, targeting the Python language."
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
