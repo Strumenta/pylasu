@@ -53,6 +53,7 @@ def topological_classifiers_sort(classifiers: List[Classifier]) -> List[Classifi
 
     return sorted_list
 
+
 def ast_generation(click, language: Language, output):
     import_abc = ast.ImportFrom(
         module='abc',
@@ -128,7 +129,7 @@ def ast_generation(click, language: Language, output):
         if isinstance(classifier, Concept):
             bases = []
             if classifier.get_extended_concept().id == StarLasuBaseLanguage.get_astnode(LionWebVersion.V2023_1).id:
-                if len(classifier.get_implemented())==0:
+                if len(classifier.get_implemented()) == 0:
                     bases.append('Node')
             else:
                 bases.append(classifier.get_extended_concept().get_name())
@@ -153,7 +154,7 @@ def ast_generation(click, language: Language, output):
                     bases.append('StarLasuNamed')
                 else:
                     bases.append(i.get_name())
-            #if classifier.is_abstract():
+            # if classifier.is_abstract():
             #    bases.append('ABC')
             dataclass_decorator = ast.Name(id="dataclass", ctx=ast.Load())
             classdef = ast.ClassDef(classifier.get_name(), bases=bases,

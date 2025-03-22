@@ -1,17 +1,11 @@
 import ast
-import keyword
 from pathlib import Path
-from typing import List, Dict
 
 import astor
-from lionwebpython.language import Language, Concept, Interface, Containment, Property
-from lionwebpython.language.classifier import Classifier
+from lionwebpython.language import Language, Concept
 from lionwebpython.language.enumeration import Enumeration
 from lionwebpython.language.primitive_type import PrimitiveType
-from lionwebpython.language.reference import Reference
-from lionwebpython.lionweb_version import LionWebVersion
 
-from pylasu.lionweb.starlasu import StarLasuBaseLanguage
 from pylasu.lionweb.utils import to_snake_case, calculate_field_name
 
 
@@ -32,6 +26,7 @@ def make_cond(enumeration_name: str, member_name: str):
         ]
     )
 
+
 # The return: return AssignmentType.Add
 def make_return(enumeration_name: str, member_name: str):
     return ast.Return(
@@ -41,6 +36,7 @@ def make_return(enumeration_name: str, member_name: str):
             ctx=ast.Load()
         )
     )
+
 
 def generate_register_deserializers_func(language: Language) -> ast.FunctionDef:
     fd = ast.FunctionDef(
@@ -100,6 +96,7 @@ def generate_register_deserializers_func(language: Language) -> ast.FunctionDef:
             ))
     return fd
 
+
 def generate_concept_deserializer(concept: Concept) -> ast.FunctionDef:
     constructor_assignments = []
     for f in concept.all_features():
@@ -131,6 +128,7 @@ def generate_concept_deserializer(concept: Concept) -> ast.FunctionDef:
         decorator_list=[],
         returns=ast.Name(id=concept.get_name(), ctx=ast.Load())
     )
+
 
 def deserializer_generation(click, language: Language, output):
     import_abc = ast.ImportFrom(
@@ -173,12 +171,14 @@ def deserializer_generation(click, language: Language, output):
     )
     import_ast = ast.ImportFrom(
         module='.ast',
-        names=[ast.alias(name=e.get_name(), asname=None) for e in language.get_elements() if not isinstance(e, PrimitiveType)],
+        names=[ast.alias(name=e.get_name(), asname=None) for e in language.get_elements()
+               if not isinstance(e, PrimitiveType)],
         level=0
     )
     import_primitives = ast.ImportFrom(
         module='primitive_types',
-        names=[ast.alias(name=e.get_name(), asname=None) for e in language.get_elements() if isinstance(e, PrimitiveType)],
+        names=[ast.alias(name=e.get_name(), asname=None) for e in language.get_elements()
+               if isinstance(e, PrimitiveType)],
         level=0
     )
     import_json_serialization = ast.ImportFrom(
