@@ -4,7 +4,7 @@ from pyecore.ecore import EPackage
 from pyecore.resources import Resource
 
 from pylasu.model import Node
-from pylasu.support import extension_method
+from pylasu.reflection.support import extension_method
 
 from deprecated import deprecated
 

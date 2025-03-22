@@ -155,34 +155,7 @@ def _generate_constructor(concept: Concept) -> ast.FunctionDef:
                 func=ast.Attribute(value=ast.Name(id='self', ctx=ast.Load()), attr='set_id', ctx=ast.Load()),
                 args=[ast.Name(id='id', ctx=ast.Load())],
                 keywords=[]
-            )),
-            # # self._set_containment_single_value(..., ...)
-            # ast.Expr(value=ast.Call(
-            #     func=ast.Attribute(
-            #         value=ast.Name(id='self', ctx=ast.Load()),
-            #         attr='_set_containment_single_value',
-            #         ctx=ast.Load()
-            #     ),
-            #     args=[],
-            #     keywords=[
-            #         ast.keyword(
-            #             arg='containment',
-            #             value=ast.Call(
-            #                 func=ast.Attribute(
-            #                     value=ast.Name(id='concept', ctx=ast.Load()),
-            #                     attr='get_containment_by_name',
-            #                     ctx=ast.Load()
-            #                 ),
-            #                 args=[ast.Constant(value='externalName')],
-            #                 keywords=[]
-            #             )
-            #         ),
-            #         ast.keyword(
-            #             arg='value',
-            #             value=ast.Name(id='externalName', ctx=ast.Load())
-            #         )
-            #     ]
-            # ))
+            ))
         ],
         decorator_list=[],
         returns=None

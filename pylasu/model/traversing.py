@@ -2,7 +2,7 @@ from typing import TypeVar, Type
 
 from . import Position
 from .model import Node
-from ..support import extension_method
+from pylasu.reflection.support import extension_method
 
 
 @extension_method(Node)

@@ -3,7 +3,7 @@ from typing import Callable, List, Set
 
 from . import walk
 from .model import Node, internal_property
-from ..support import extension_method
+from pylasu.reflection.support import extension_method
 
 
 @extension_method(Node)

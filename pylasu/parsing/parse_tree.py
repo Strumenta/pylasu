@@ -7,7 +7,7 @@ from antlr4.tree.Tree import ParseTree
 from pylasu.model import Origin, Position, Point
 from pylasu.model.model import internal_property, Node
 from pylasu.model.position import Source
-from pylasu.support import extension_method
+from pylasu.reflection.support import extension_method
 
 import inspect
 

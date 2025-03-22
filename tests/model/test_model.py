@@ -6,7 +6,7 @@ from pylasu.model import Node, Position, Point, internal_field
 from pylasu.model.model import node_property, node_containment
 from pylasu.model.reflection import Multiplicity, PropertyDescription
 from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
-from pylasu.support import extension_method
+from pylasu.reflection.support import extension_method
 
 
 @dataclasses.dataclass
