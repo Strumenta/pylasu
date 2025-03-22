@@ -130,8 +130,12 @@ def _generate_constructor(concept: Concept) -> ast.FunctionDef:
                     slice=ast.Name(id="Position", ctx=ast.Load()),
                     ctx=ast.Load()
                 )),
+                ast.arg(arg="concept", annotation=ast.Name(id="Concept", ctx=ast.Load()))
             ],
-            kwonlyargs=[], kw_defaults=[], defaults=[]
+            kwonlyargs=[], kw_defaults=[],
+            defaults = [
+                ast.Constant(value=to_snake_case(concept.get_name()).upper())
+            ]
         ),
         body=[
             # super().__init__(id=id, position=position, concept=concept)

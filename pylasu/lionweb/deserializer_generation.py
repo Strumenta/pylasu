@@ -223,6 +223,7 @@ def deserializer_generation(click, language: Language, output):
     for e in language.get_elements():
         if isinstance(e, Enumeration):
             arg_serialized = ast.arg(arg="serialized", annotation=ast.Name(id="str", ctx=ast.Load()))
+            arg_required = ast.arg(arg="required", annotation=ast.Name(id="bool", ctx=ast.Load()))
             # The raise: raise ValueError(f"...")
             raise_stmt = ast.Raise(
                 exc=ast.Call(
@@ -266,7 +267,7 @@ def deserializer_generation(click, language: Language, output):
                 name=f"_deserialize_{to_snake_case(e.get_name())}",
                 args=ast.arguments(
                     posonlyargs=[],
-                    args=[arg_serialized],
+                    args=[arg_serialized, arg_required],
                     kwonlyargs=[],
                     kw_defaults=[],
                     defaults=[]
