@@ -1,13 +1,38 @@
-
-from .StrumentaLanguageSupport import getEClassifier, eClassifiers
-from .StrumentaLanguageSupport import name, nsURI, nsPrefix, eClass
-from .StrumentaLanguageSupport import BigDecimal, BigInteger, LocalDate, LocalTime, LocalDateTime, Point, Position, Origin, Destination, NodeDestination, TextFileDestination, ASTNode, Statement, Expression, EntityDeclaration, IssueType, IssueSeverity, Issue, PossiblyNamed, Named, ReferenceByName, Result
-
-
 from . import StrumentaLanguageSupport
+from .StrumentaLanguageSupport import (ASTNode, BigDecimal, BigInteger,
+                                       Destination, EntityDeclaration,
+                                       Expression, Issue, IssueSeverity,
+                                       IssueType, LocalDate, LocalDateTime,
+                                       LocalTime, Named, NodeDestination,
+                                       Origin, Point, Position, PossiblyNamed,
+                                       ReferenceByName, Result, Statement,
+                                       TextFileDestination, eClass,
+                                       eClassifiers)
 
-__all__ = ['BigDecimal', 'BigInteger', 'LocalDate', 'LocalTime', 'LocalDateTime', 'Point', 'Position', 'Origin', 'Destination', 'NodeDestination', 'TextFileDestination',
-           'ASTNode', 'Statement', 'Expression', 'EntityDeclaration', 'IssueType', 'IssueSeverity', 'Issue', 'PossiblyNamed', 'Named', 'ReferenceByName', 'Result']
+__all__ = [
+    "BigDecimal",
+    "BigInteger",
+    "LocalDate",
+    "LocalTime",
+    "LocalDateTime",
+    "Point",
+    "Position",
+    "Origin",
+    "Destination",
+    "NodeDestination",
+    "TextFileDestination",
+    "ASTNode",
+    "Statement",
+    "Expression",
+    "EntityDeclaration",
+    "IssueType",
+    "IssueSeverity",
+    "Issue",
+    "PossiblyNamed",
+    "Named",
+    "ReferenceByName",
+    "Result",
+]
 
 eSubpackages = []
 eSuperPackage = None

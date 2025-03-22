@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Dict, Optional
 
-from lionwebpython.language import Language, Concept
+from lionwebpython.language import Concept, Language
 from lionwebpython.language.lioncore_builtins import LionCoreBuiltins
 from lionwebpython.language.primitive_type import PrimitiveType
 from lionwebpython.lionweb_version import LionWebVersion  # noqa: F401
@@ -18,7 +18,9 @@ class StarLasuBaseLanguage(Language):
     _instances: Dict["LionWebVersion", "LionCoreBuiltins"] = {}
 
     def __init__(self, lion_web_version: "LionWebVersion"):
-        super().__init__(lion_web_version=lion_web_version, name="com.strumenta.StarLasu")
+        super().__init__(
+            lion_web_version=lion_web_version, name="com.strumenta.StarLasu"
+        )
         from lionwebpython.lionweb_version import LionWebVersion
         from lionwebpython.utils.id_utils import IdUtils
 
@@ -40,21 +42,33 @@ class StarLasuBaseLanguage(Language):
         self.set_version(version)
 
         self.char = PrimitiveType(
-            lion_web_version=lion_web_version, language=self,
-            name="Char", id=f"com-strumenta-StarLasu-Char-id{version_id_suffix}",
-            key="com_strumenta_starlasu-Char-key")
+            lion_web_version=lion_web_version,
+            language=self,
+            name="Char",
+            id=f"com-strumenta-StarLasu-Char-id{version_id_suffix}",
+            key="com_strumenta_starlasu-Char-key",
+        )
         self.point = PrimitiveType(
-            lion_web_version=lion_web_version, language=self,
-            name="Point", id=f"com-strumenta-StarLasu-Point-id{version_id_suffix}",
-            key="com_strumenta_starlasu-Point-key")
+            lion_web_version=lion_web_version,
+            language=self,
+            name="Point",
+            id=f"com-strumenta-StarLasu-Point-id{version_id_suffix}",
+            key="com_strumenta_starlasu-Point-key",
+        )
         self.position = PrimitiveType(
-            lion_web_version=lion_web_version, language=self,
-            name="Position", id=f"com-strumenta-StarLasu-Position-id{version_id_suffix}",
-            key="com_strumenta_starlasu-Position-key")
+            lion_web_version=lion_web_version,
+            language=self,
+            name="Position",
+            id=f"com-strumenta-StarLasu-Position-id{version_id_suffix}",
+            key="com_strumenta_starlasu-Position-key",
+        )
         self.astnode = Concept(
-            lion_web_version=lion_web_version, language=self,
-            name="ASTNode", key="com_strumenta_starlasu-ASTNode-key",
-            id="com-strumenta-StarLasu-ASTNode-id")
+            lion_web_version=lion_web_version,
+            language=self,
+            name="ASTNode",
+            key="com_strumenta_starlasu-ASTNode-key",
+            id="com-strumenta-StarLasu-ASTNode-id",
+        )
 
     @classmethod
     def get_astnode(

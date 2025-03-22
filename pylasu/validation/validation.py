@@ -2,7 +2,7 @@ import enum
 from dataclasses import dataclass, field
 from typing import List
 
-from pylasu.model import Position, Node
+from pylasu.model import Node, Position
 
 
 class IssueType(enum.Enum):
@@ -31,13 +31,18 @@ class Issue:
         return msg
 
     @staticmethod
-    def semantic(message: str, severity: IssueSeverity = IssueSeverity.ERROR, position: Position = None):
+    def semantic(
+        message: str,
+        severity: IssueSeverity = IssueSeverity.ERROR,
+        position: Position = None,
+    ):
         return Issue(IssueType.SEMANTIC, message, severity, position)
 
 
 @dataclass
 class WithIssues:
     """Many classes have the necessity of tracking issues"""
+
     issues: List[Issue] = field(default_factory=list, init=False)
 
 

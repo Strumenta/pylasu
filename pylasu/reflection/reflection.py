@@ -1,5 +1,5 @@
 import typing
-from enum import EnumMeta, Enum
+from enum import Enum, EnumMeta
 from typing import Callable
 
 
@@ -11,6 +11,7 @@ def get_type_annotations(cls: type):
         try:
             # On Python 3.10+
             import inspect
+
             if hasattr(inspect, "get_annotations"):
                 return inspect.get_annotations(cls)
             elif hasattr(inspect, "getannotations"):
@@ -18,9 +19,9 @@ def get_type_annotations(cls: type):
         except ModuleNotFoundError:
             pass
         if isinstance(cls, type):
-            return cls.__dict__.get('__annotations__', {})
+            return cls.__dict__.get("__annotations__", {})
         else:
-            return getattr(cls, '__annotations__', {})
+            return getattr(cls, "__annotations__", {})
 
 
 def get_type_origin(tp):
@@ -39,8 +40,9 @@ def is_enum_type(attr_type):
 
 
 def is_sequence_type(attr_type):
-    return isinstance(get_type_origin(attr_type), type) and \
-        issubclass(get_type_origin(attr_type), typing.Sequence)
+    return isinstance(get_type_origin(attr_type), type) and issubclass(
+        get_type_origin(attr_type), typing.Sequence
+    )
 
 
 def get_type_arguments(tp):

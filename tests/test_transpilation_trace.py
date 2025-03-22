@@ -1,12 +1,12 @@
 import json
 import unittest
 
-from pyecore.ecore import EString, EAttribute, EInt
+from pyecore.ecore import EAttribute, EInt, EString
 
 import pylasu.StrumentaLanguageSupport as starlasu
-from pylasu.StrumentaLanguageSupport import ASTNode
 from pylasu.emf import MetamodelBuilder
-from pylasu.playground import TranspilationTrace, ETranspilationTrace
+from pylasu.playground import ETranspilationTrace, TranspilationTrace
+from pylasu.StrumentaLanguageSupport import ASTNode
 from pylasu.validation.validation import Result
 from tests.fixtures import Box, Item
 

@@ -24,10 +24,10 @@ class Point:
             column = self.column
             i = 0
             while i < len(other):
-                if other[i] == '\n' or other[i] == '\r':
+                if other[i] == "\n" or other[i] == "\r":
                     line += 1
                     column = 0
-                    if other[i] == '\r' and i < len(other) - 1 and other[i + 1] == '\n':
+                    if other[i] == "\r" and i < len(other) - 1 and other[i + 1] == "\n":
                         i += 1  # Count the \r\n sequence as 1 line
                 else:
                     column += 1
@@ -69,12 +69,12 @@ class FileSource(Source):
 
 @dataclass
 class StringSource(Source):
-    code: str = None
+    code: str
 
 
 @dataclass
 class URLSource(Source):
-    url: str = None
+    url: str
 
 
 @dataclass(order=True)
@@ -86,28 +86,40 @@ class Position:
 
     Consider a file with one line, containing the text "HELLO".
     The Position of such text will be Position(Point(1, 0), Point(1, 5))."""
+
     start: Point
     end: Point
     source: Source = field(compare=False, default=None)
 
     def __post_init__(self):
         if self.end < self.start:
-            raise Exception(f"End point can't be before starting point: {self.start} – {self.end}")
+            raise Exception(
+                f"End point can't be before starting point: {self.start} – {self.end}"
+            )
 
     def __contains__(self, pos):
-        return isinstance(pos, Position) and self.start <= pos.start and self.end >= pos.end
+        return (
+            isinstance(pos, Position)
+            and self.start <= pos.start
+            and self.end >= pos.end
+        )
 
     def __repr__(self):
-        return f"Position(start={self.start}, end={self.end}"\
-               + (f", source={self.source}" if self.source is not None else "")
+        return f"Position(start={self.start}, end={self.end}" + (
+            f", source={self.source}" if self.source is not None else ""
+        )
 
     def __str__(self):
-        str_rep = (f"{self.source}:" if self.source is not None else "") + str(self.start)
+        str_rep = (f"{self.source}:" if self.source is not None else "") + str(
+            self.start
+        )
         if self.start != self.end:
             str_rep += f"-{self.end}"
         return str_rep
 
 
-def pos(start_line: int, start_col: int, end_line: int, end_col: int, source: Source = None):
+def pos(
+    start_line: int, start_col: int, end_line: int, end_col: int, source: Source = None
+):
     """Utility function to create a Position"""
     return Position(Point(start_line, start_col), Point(end_line, end_col), source)

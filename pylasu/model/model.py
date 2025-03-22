@@ -2,15 +2,16 @@ import dataclasses
 import inspect
 import sys
 import typing
-from abc import ABC, abstractmethod, ABCMeta
-from dataclasses import Field, MISSING, dataclass, field
-from typing import Optional, Callable, List, Union
+from abc import ABC, ABCMeta, abstractmethod
+from dataclasses import MISSING, Field, dataclass, field
+from typing import Callable, List, Optional, Union
 
+from ..reflection import (get_type_annotations, get_type_arguments,
+                          is_sequence_type)
+from ..reflection.reflection import get_type_origin
 from .naming import ReferenceByName
 from .position import Position, Source
 from .reflection import Multiplicity, PropertyDescription
-from ..reflection import get_type_annotations, get_type_arguments, is_sequence_type
-from ..reflection.reflection import get_type_origin
 
 PYLASU_FEATURE = "pylasu_feature"
 
@@ -21,9 +22,12 @@ class internal_property(property):
 
 def internal_properties(*props: str):
     def decorate(cls: type):
-        cls.__internal_properties__ = (
-            getattr(cls, "__internal_properties__", []) + [*Node.__internal_properties__, *props])
+        cls.__internal_properties__ = getattr(cls, "__internal_properties__", []) + [
+            *Node.__internal_properties__,
+            *props,
+        ]
         return cls
+
     return decorate
 
 
@@ -32,28 +36,46 @@ class InternalField(Field):
 
 
 def internal_field(
-        *, default=MISSING, default_factory=MISSING, init=True, repr=True, hash=None, compare=True, metadata=None,
-        kw_only=False):
+    *,
+    default=MISSING,
+    default_factory=MISSING,
+    init=True,
+    repr=True,
+    hash=None,
+    compare=True,
+    metadata=None,
+    kw_only=False,
+):
     """Return an object to identify internal dataclass fields. The arguments are the same as dataclasses.field."""
 
     if default is not MISSING and default_factory is not MISSING:
-        raise ValueError('cannot specify both default and default_factory')
+        raise ValueError("cannot specify both default and default_factory")
     try:
         # Python 3.10+
-        return InternalField(default, default_factory, init, repr, hash, compare, metadata, kw_only)
+        return InternalField(
+            default, default_factory, init, repr, hash, compare, metadata, kw_only
+        )
     except TypeError:
-        return InternalField(default, default_factory, init, repr, hash, compare, metadata)
+        return InternalField(
+            default, default_factory, init, repr, hash, compare, metadata
+        )
 
 
 def node_property(default=MISSING):
     description = PropertyDescription(
-        "", None,
-        multiplicity=Multiplicity.OPTIONAL if default is None else Multiplicity.SINGULAR)
+        "",
+        None,
+        multiplicity=(
+            Multiplicity.OPTIONAL if default is None else Multiplicity.SINGULAR
+        ),
+    )
     return field(default=default, metadata={PYLASU_FEATURE: description})
 
 
 def node_containment(multiplicity: Multiplicity = Multiplicity.SINGULAR):
-    description = PropertyDescription("", None, is_containment=True, multiplicity=multiplicity)
+    description = PropertyDescription(
+        "", None, is_containment=True, multiplicity=multiplicity
+    )
 
     if multiplicity == Multiplicity.SINGULAR:
         return field(metadata={PYLASU_FEATURE: description})
@@ -100,7 +122,11 @@ class TextFileDestination(Destination):
 
 
 def is_internal_property_or_method(value):
-    return isinstance(value, internal_property) or isinstance(value, InternalField) or isinstance(value, Callable)
+    return (
+        isinstance(value, internal_property)
+        or isinstance(value, InternalField)
+        or isinstance(value, Callable)
+    )
 
 
 def provides_nodes(decl_type):
@@ -154,8 +180,10 @@ def compute_feature_from_annotation(cl, name, decl_type):
         if hasattr(typing, "ForwardRef"):
             fwref = typing.ForwardRef
         if fwref and isinstance(decl_type, fwref):
-            raise Exception(f"Feature {name}'s type is unresolved forward reference {decl_type}, "
-                            f"please use node_containment or node_property")
+            raise Exception(
+                f"Feature {name}'s type is unresolved forward reference {decl_type}, "
+                f"please use node_containment or node_property"
+            )
         elif type(decl_type) is str:
             decl_type = try_to_resolve_string_type(decl_type, name, cl)
         if not isinstance(decl_type, type):
@@ -167,7 +195,7 @@ def compute_feature_from_annotation(cl, name, decl_type):
 
 def try_to_resolve_string_type(decl_type, name, cl):
     try:
-        ns = getattr(sys.modules.get(cl.__module__, None), '__dict__', globals())
+        ns = getattr(sys.modules.get(cl.__module__, None), "__dict__", globals())
         decl_type = ns[decl_type]
     except KeyError:
         raise Exception(f"Unsupported feature {name} of unknown type {decl_type}")
@@ -191,11 +219,15 @@ def try_to_resolve_type(decl_type, feature):
             elif type_args[1] is type(None):
                 decl_type = type_args[0]
             else:
-                raise Exception(f"Unsupported feature {feature.name} of union type {decl_type}")
+                raise Exception(
+                    f"Unsupported feature {feature.name} of union type {decl_type}"
+                )
             if feature.multiplicity == Multiplicity.SINGULAR:
                 feature.multiplicity = Multiplicity.OPTIONAL
         else:
-            raise Exception(f"Unsupported feature {feature.name} of union type {decl_type}")
+            raise Exception(
+                f"Unsupported feature {feature.name} of union type {decl_type}"
+            )
     return decl_type
 
 
@@ -208,8 +240,16 @@ class Concept(ABCMeta):
             if hasattr(base, "__internal_properties__"):
                 cls.__internal_properties__.extend(base.__internal_properties__)
         if not cls.__internal_properties__:
-            cls.__internal_properties__ = ["origin", "destination", "parent", "position", "position_override"]
-        cls.__internal_properties__.extend([n for n, v in inspect.getmembers(cls, is_internal_property_or_method)])
+            cls.__internal_properties__ = [
+                "origin",
+                "destination",
+                "parent",
+                "position",
+                "position_override",
+            ]
+        cls.__internal_properties__.extend(
+            [n for n, v in inspect.getmembers(cls, is_internal_property_or_method)]
+        )
 
     @property
     def node_properties(cls):
@@ -235,7 +275,7 @@ class Concept(ABCMeta):
                 yield feature
 
     def is_node_property(cls, name):
-        return not name.startswith('_') and name not in cls.__internal_properties__
+        return not name.startswith("_") and name not in cls.__internal_properties__
 
 
 class Node(Origin, Destination, metaclass=Concept):
@@ -244,8 +284,12 @@ class Node(Origin, Destination, metaclass=Concept):
     parent: Optional["Node"] = None
     position_override: Optional[Position] = None
 
-    def __init__(self, origin: Optional[Origin] = None, parent: Optional["Node"] = None,
-                 position_override: Optional[Position] = None):
+    def __init__(
+        self,
+        origin: Optional[Origin] = None,
+        parent: Optional["Node"] = None,
+        position_override: Optional[Position] = None,
+    ):
         self.origin = origin
         self.parent = parent
         self.position_override = position_override
@@ -264,8 +308,11 @@ class Node(Origin, Destination, metaclass=Concept):
 
     @internal_property
     def position(self) -> Optional[Position]:
-        return self.position_override if self.position_override is not None\
+        return (
+            self.position_override
+            if self.position_override is not None
             else self.origin.position if self.origin is not None else None
+        )
 
     @position.setter
     def position(self, position: Optional[Position]):
@@ -281,10 +328,17 @@ class Node(Origin, Destination, metaclass=Concept):
 
     @internal_property
     def properties(self):
-        return (PropertyDescription(p.name, p.type,
-                                    is_containment=p.is_containment, is_reference=p.is_reference,
-                                    multiplicity=p.multiplicity, value=getattr(self, p.name))
-                for p in self.__class__.node_properties)
+        return (
+            PropertyDescription(
+                p.name,
+                p.type,
+                is_containment=p.is_containment,
+                is_reference=p.is_reference,
+                multiplicity=p.multiplicity,
+                value=getattr(self, p.name),
+            )
+            for p in self.__class__.node_properties
+        )
 
     @internal_property
     def _fields(self):

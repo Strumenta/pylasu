@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import List
 
 from pylasu.model import Node
-from tests.fixtures import box, Item
+from tests.fixtures import Item, box
 
 
 @dataclass(unsafe_hash=True)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from pylasu.model import Node, pos, internal_field
+from pylasu.model import Node, internal_field, pos
 
 
 @dataclass

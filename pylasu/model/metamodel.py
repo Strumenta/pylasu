@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
 class Expression(ABC):
@@ -36,5 +36,6 @@ class Documentation(ABC):
 class Named(ABC):
 
     @property
+    @abstractmethod
     def name(self) -> str:
         pass

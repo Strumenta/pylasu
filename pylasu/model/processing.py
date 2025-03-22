@@ -1,9 +1,10 @@
 from collections.abc import Iterable
 from typing import Callable, List, Set
 
+from pylasu.reflection.support import extension_method
+
 from . import walk
 from .model import Node, internal_property
-from pylasu.reflection.support import extension_method
 
 
 @extension_method(Node)
@@ -52,7 +53,11 @@ def transform_children(self: Node, operation: Callable[[Node], Node]):
             if new_value != value:
                 setattr(self, name, new_value)
         elif isinstance(value, List):
-            setattr(self, name, [operation(item) if isinstance(item, Node) else item for item in value])
+            setattr(
+                self,
+                name,
+                [operation(item) if isinstance(item, Node) else item for item in value],
+            )
         elif isinstance(value, Set):
             raise Exception("Sets are not supported currently")
 

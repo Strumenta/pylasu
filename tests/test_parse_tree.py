@@ -3,7 +3,8 @@ import unittest
 from antlr4 import CommonTokenStream, InputStream
 
 from pylasu.model import Point
-from pylasu.parsing.parse_tree import ParseTreeOrigin, generate_nodes_classes_for_parser
+from pylasu.parsing.parse_tree import (ParseTreeOrigin,
+                                       generate_nodes_classes_for_parser)
 from tests.antlr_script.AntlrScriptLexer import AntlrScriptLexer
 from tests.antlr_script.AntlrScriptParser import AntlrScriptParser
 from tests.simple_lang.SimpleLangLexer import SimpleLangLexer

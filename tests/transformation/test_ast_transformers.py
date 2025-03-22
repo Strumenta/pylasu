@@ -6,7 +6,8 @@ from typing import List
 from pylasu.model import Node
 from pylasu.testing.testing import assert_asts_are_equal
 from pylasu.transformation.generic_nodes import GenericNode
-from pylasu.transformation.transformation import ASTTransformer, PropertyRef, ast_transformer
+from pylasu.transformation.transformation import (ASTTransformer, PropertyRef,
+                                                  ast_transformer)
 
 
 @dataclass

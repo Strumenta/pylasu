@@ -1,8 +1,9 @@
-from typing import TypeVar, Type
+from typing import Type, TypeVar
+
+from pylasu.reflection.support import extension_method
 
 from . import Position
 from .model import Node
-from pylasu.reflection.support import extension_method
 
 
 @extension_method(Node)

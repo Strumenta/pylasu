@@ -2,10 +2,10 @@ import dataclasses
 import unittest
 from typing import List, Optional, Union
 
-from pylasu.model import Node, Position, Point, internal_field
-from pylasu.model.model import node_property, node_containment
+from pylasu.model import Node, Point, Position, internal_field
+from pylasu.model.model import node_containment, node_property
+from pylasu.model.naming import Named, ReferenceByName, Scope, Symbol
 from pylasu.model.reflection import Multiplicity, PropertyDescription
-from pylasu.model.naming import ReferenceByName, Named, Scope, Symbol
 from pylasu.reflection.support import extension_method
 
 

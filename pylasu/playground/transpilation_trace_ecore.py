@@ -1,7 +1,7 @@
-from io import IOBase, BytesIO
+from io import BytesIO, IOBase
 
-from pyecore.ecore import EObject, MetaEClass, EAttribute, EString, EReference
-from pyecore.resources import ResourceSet, URI
+from pyecore.ecore import EAttribute, EObject, EReference, EString, MetaEClass
+from pyecore.resources import URI, ResourceSet
 from pyecore.resources.json import JsonResource as BaseJsonResource
 
 from pylasu import StrumentaLanguageSupport as starlasu
@@ -28,7 +28,15 @@ class TranspilationTrace(EObject, metaclass=MetaEClass):
     generatedCode = EAttribute(eType=EString)
     issues = EReference(containment=True, eType=starlasu.Issue, upper=-1)
 
-    def __init__(self, *, original_code=None, source_result=None, target_result=None, generated_code=None, issues=None):
+    def __init__(
+        self,
+        *,
+        original_code=None,
+        source_result=None,
+        target_result=None,
+        generated_code=None,
+        issues=None,
+    ):
         super().__init__()
         if original_code is not None:
             self.originalCode = original_code
@@ -43,7 +51,7 @@ class TranspilationTrace(EObject, metaclass=MetaEClass):
 
     def save_as_json(self, name, *packages):
         rset = ResourceSet()
-        rset.resource_factory['json'] = JsonResource
+        rset.resource_factory["json"] = JsonResource
         resource = rset.create_resource(URI(name))
         for pkg in packages:
             package_resource = rset.create_resource(URI(pkg.nsURI))
@@ -51,4 +59,4 @@ class TranspilationTrace(EObject, metaclass=MetaEClass):
         resource.contents.append(self)
         with BytesIO() as out:
             resource.save(out)
-            return out.getvalue().decode('utf-8')
+            return out.getvalue().decode("utf-8")

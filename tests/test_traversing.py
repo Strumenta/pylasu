@@ -2,7 +2,7 @@ import unittest
 
 from pylasu.model import pos
 from pylasu.model.traversing import find_ancestor_of_type
-from tests.fixtures import box, Box
+from tests.fixtures import Box, box
 
 
 class TraversingTest(unittest.TestCase):

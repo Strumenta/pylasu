@@ -1,25 +1,27 @@
 """Definition of meta model 'StrumentaLanguageSupport'."""
+
 from functools import partial
+
 import pyecore.ecore as Ecore
-from pyecore.ecore import *
+from pyecore.ecore import (EAttribute, EDataType, EEnum, EInt, EObject,
+                           EPackage, EReference, EString, MetaEClass, abstract)
 
-
-name = 'StrumentaLanguageSupport'
-nsURI = 'https://strumenta.com/kolasu/v2'
-nsPrefix = ''
+name = "StrumentaLanguageSupport"
+nsURI = "https://strumenta.com/kolasu/v2"
+nsPrefix = ""
 
 eClass = EPackage(name=name, nsURI=nsURI, nsPrefix=nsPrefix)
 
 eClassifiers = {}
 getEClassifier = partial(Ecore.getEClassifier, searchspace=eClassifiers)
-IssueType = EEnum('IssueType', literals=['LEXICAL', 'SYNTACTIC', 'SEMANTIC'])
+IssueType = EEnum("IssueType", literals=["LEXICAL", "SYNTACTIC", "SEMANTIC"])
 
-IssueSeverity = EEnum('IssueSeverity', literals=['ERROR', 'WARNING', 'INFO'])
+IssueSeverity = EEnum("IssueSeverity", literals=["ERROR", "WARNING", "INFO"])
 
 
-BigDecimal = EDataType('BigDecimal', instanceClassName='java.math.BigDecimal')
+BigDecimal = EDataType("BigDecimal", instanceClassName="java.math.BigDecimal")
 
-BigInteger = EDataType('BigInteger', instanceClassName='java.math.BigInteger')
+BigInteger = EDataType("BigInteger", instanceClassName="java.math.BigInteger")
 
 
 class LocalDate(EObject, metaclass=MetaEClass):
@@ -175,7 +177,9 @@ class Issue(EObject, metaclass=MetaEClass):
 
     type = EAttribute(eType=IssueType, unique=True, derived=False, changeable=True)
     message = EAttribute(eType=EString, unique=True, derived=False, changeable=True)
-    severity = EAttribute(eType=IssueSeverity, unique=True, derived=False, changeable=True)
+    severity = EAttribute(
+        eType=IssueSeverity, unique=True, derived=False, changeable=True
+    )
     position = EReference(ordered=True, unique=True, containment=True, derived=False)
 
     def __init__(self, *, type=None, message=None, severity=None, position=None):
@@ -232,7 +236,9 @@ class ReferenceByName(EObject, metaclass=MetaEClass):
 class Result(EObject, metaclass=MetaEClass):
 
     root = EReference(ordered=True, unique=True, containment=True, derived=False)
-    issues = EReference(ordered=True, unique=True, containment=True, derived=False, upper=-1)
+    issues = EReference(
+        ordered=True, unique=True, containment=True, derived=False, upper=-1
+    )
 
     def __init__(self, *, root=None, issues=None):
         # if kwargs:

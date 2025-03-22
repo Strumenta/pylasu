@@ -9,8 +9,8 @@ LW_REFERENCE_VERSION = LionWebVersion.V2023_1
 
 def to_snake_case(name: str) -> str:
     # Replace capital letters with _lowercase, except at the beginning
-    name = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', name)
-    name = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', name)
+    name = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", name)
+    name = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name)
     return name.lower()
 
 
@@ -38,7 +38,7 @@ def to_lionweb_identifier(s: str) -> str:
         str: Valid LionWeb identifier.
     """
     # Replace invalid characters with underscores
-    s = re.sub(r'[^a-zA-Z0-9_]', '_', s)
+    s = re.sub(r"[^a-zA-Z0-9_]", "_", s)
 
     # Ensure it does not start with a digit by prefixing with "_"
     if s and s[0].isdigit():

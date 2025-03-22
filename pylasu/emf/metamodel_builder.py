@@ -1,19 +1,20 @@
 import types
 import typing
-from dataclasses import is_dataclass, fields
+from dataclasses import fields, is_dataclass
 
-from pyecore.ecore import EAttribute, ECollection, EObject, EPackage, EReference, MetaEClass, EBoolean, EString, EInt, \
-    EEnum
+from deprecated import deprecated
+from pyecore.ecore import (EAttribute, EBoolean, ECollection, EEnum, EInt,
+                           EObject, EPackage, EReference, EString, MetaEClass)
 from pyecore.resources import Resource
+
 from pylasu import StrumentaLanguageSupport as starlasu
-from pylasu.StrumentaLanguageSupport import ASTNode
 from pylasu.emf.model import find_eclassifier
 from pylasu.model import Node
 from pylasu.model.model import InternalField
 from pylasu.reflection import get_type_annotations
-from pylasu.reflection.reflection import get_type_origin, is_enum_type, is_sequence_type, get_type_arguments
-
-from deprecated import deprecated
+from pylasu.reflection.reflection import (get_type_arguments, get_type_origin,
+                                          is_enum_type, is_sequence_type)
+from pylasu.StrumentaLanguageSupport import ASTNode
 
 
 @deprecated(reason="EMF Support is going to be dropped")
@@ -34,7 +35,7 @@ def resolve_bases(bases):
         if not isinstance(new_base, tuple):
             raise TypeError("__mro_entries__ must return a tuple")
         else:
-            new_bases[i + shift:i + shift + 1] = new_base
+            new_bases[i + shift : i + shift + 1] = new_base
             shift += len(new_base) - 1
     if not updated:
         return bases
@@ -43,8 +44,14 @@ def resolve_bases(bases):
 
 @deprecated(reason="EMF Support is going to be dropped")
 class MetamodelBuilder:
-    def __init__(self, package_name: str, ns_uri: str, ns_prefix: str = None, resource: Resource = None,
-                 base_node_class: type = Node):
+    def __init__(
+        self,
+        package_name: str,
+        ns_uri: str,
+        ns_prefix: str = None,
+        resource: Resource = None,
+        base_node_class: type = Node,
+    ):
         self.package = EPackage(package_name, ns_uri, ns_prefix)
         if resource:
             resource.append(self.package)
@@ -74,10 +81,12 @@ class MetamodelBuilder:
             bases = self.setup_base_classes(cls)
             eclass = MetaEClass(cls.__name__, resolve_bases(tuple(bases)), nmspc)
             eclass.eClass.ePackage = self.package
-            for (type_name, ref) in self.forward_references:
+            for type_name, ref in self.forward_references:
                 if type_name == cls.__name__:
                     ref.eType = eclass
-            self.forward_references = [(t, r) for t, r in self.forward_references if not r.eType]
+            self.forward_references = [
+                (t, r) for t, r in self.forward_references if not r.eType
+            ]
         return eclass
 
     def setup_base_classes(self, cls):
@@ -100,7 +109,7 @@ class MetamodelBuilder:
             "position": EReference("position", starlasu.Position, containment=True)
         }
         for attr in anns if anns else []:
-            if attr.startswith('_'):
+            if attr.startswith("_"):
                 continue
             elif is_dataclass(cls):
                 field = next((f for f in fields(cls) if f.name == attr), None)
@@ -110,9 +119,13 @@ class MetamodelBuilder:
             nmspc[attr] = self.to_structural_feature(attr, attr_type)
         return nmspc
 
-    def to_structural_feature(self, attr, attr_type, unsupported_type_handler=None):  # noqa: C901
+    def to_structural_feature(
+        self, attr, attr_type, unsupported_type_handler=None
+    ):  # noqa: C901
         def raise_on_unsupported_type(attr_type, attr):
-            raise Exception("Unsupported type " + str(attr_type) + " for attribute " + attr)
+            raise Exception(
+                "Unsupported type " + str(attr_type) + " for attribute " + attr
+            )
 
         def default_unsupported_type(_, __):
             return EObject
@@ -123,21 +136,25 @@ class MetamodelBuilder:
             return self.to_reference(attr, attr_type)
         elif attr_type in self.data_types:
             return EAttribute(attr, self.data_types[attr_type])
-        elif attr_type == object:
+        elif attr_type is object:
             return EAttribute(attr)
         elif self.is_node_type(attr_type):
             return EReference(attr, self.provide_class(attr_type), containment=True)
         elif is_sequence_type(attr_type):
             return self.to_list_reference(attr, attr_type, default_unsupported_type)
         elif get_type_origin(attr_type) == typing.Union:
-            return EReference(attr, EObject, containment=True)  # TODO here we could refine the type better
+            return EReference(
+                attr, EObject, containment=True
+            )  # TODO here we could refine the type better
         elif is_enum_type(attr_type):
             return self.to_enum_attribute(attr, attr_type)
         else:
             return unsupported_type_handler(attr_type, attr)
 
     def is_node_type(self, attr_type):
-        return isinstance(attr_type, type) and issubclass(attr_type, self.base_node_class)
+        return isinstance(attr_type, type) and issubclass(
+            attr_type, self.base_node_class
+        )
 
     def to_enum_attribute(self, attr, attr_type):
         tp = EEnum(name=attr_type.__name__, literals=attr_type.__members__)
@@ -148,7 +165,9 @@ class MetamodelBuilder:
     def to_list_reference(self, attr, attr_type, default_unsupported_type):
         type_args = get_type_arguments(attr_type)
         if type_args and len(type_args) == 1:
-            ft = self.to_structural_feature(attr, type_args[0], default_unsupported_type)
+            ft = self.to_structural_feature(
+                attr, type_args[0], default_unsupported_type
+            )
             ft.upperBound = -1
             return ft
         else:
@@ -165,8 +184,12 @@ class MetamodelBuilder:
 
     def generate(self):
         if self.forward_references:
-            raise Exception("The following classes are missing from " + self.package.name + ": "
-                            + ", ".join(n for n, _ in self.forward_references))
+            raise Exception(
+                "The following classes are missing from "
+                + self.package.name
+                + ": "
+                + ", ".join(n for n, _ in self.forward_references)
+            )
         return self.package
 
 

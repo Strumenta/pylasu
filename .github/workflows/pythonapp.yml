@@ -30,6 +30,7 @@ jobs:
           # stop the build if there are Python style violations
           flake8 . --count --show-source --statistics
           flake8 tests --config tests/.flake8 --count --show-source --statistics
+          ruff check pylasu/ tests/
       - name: Generate test parsers
         run: ./generate-test-parsers.sh
         working-directory: tests

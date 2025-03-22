@@ -4,8 +4,9 @@ from typing import List
 
 from antlr4 import CommonTokenStream, InputStream
 
-from pylasu.mapping.parse_tree_to_ast_transformer import ParseTreeToASTTransformer
-from pylasu.model import Node, Named, ReferenceByName
+from pylasu.mapping.parse_tree_to_ast_transformer import \
+    ParseTreeToASTTransformer
+from pylasu.model import Named, Node, ReferenceByName
 from pylasu.transformation.transformation import PropertyRef
 from tests.antlr_entity.AntlrEntityLexer import AntlrEntityLexer
 from tests.antlr_entity.AntlrEntityParser import AntlrEntityParser

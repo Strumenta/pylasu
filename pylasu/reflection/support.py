@@ -10,6 +10,7 @@ def register_internal_property(cls, name):
 def extension_method(cls):
     """Installs the decorated function as an extension method on cls.
     See https://mail.python.org/pipermail/python-dev/2008-January/076194.html"""
+
     def decorator(func):
         name = func.__name__
         if name in cls.__dict__:
@@ -18,4 +19,5 @@ def extension_method(cls):
         if isinstance(cls, Concept):
             register_internal_property(cls, name)
         return func
+
     return decorator

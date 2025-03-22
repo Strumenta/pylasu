@@ -1,15 +1,14 @@
+import inspect
 from dataclasses import dataclass, field
-from typing import Optional, List, Sequence
+from typing import List, Optional, Sequence
 
 from antlr4 import ParserRuleContext, TerminalNode, Token
 from antlr4.tree.Tree import ParseTree
 
-from pylasu.model import Origin, Position, Point
-from pylasu.model.model import internal_property, Node
+from pylasu.model import Origin, Point, Position
+from pylasu.model.model import Node, internal_property
 from pylasu.model.position import Source
 from pylasu.reflection.support import extension_method
-
-import inspect
 
 
 @dataclass
@@ -52,22 +51,22 @@ def to_position(self: ParserRuleContext, source: Source = None):
 
 
 @extension_method(TerminalNode)
-def to_position(self: TerminalNode, source: Source = None):
+def to_position(self: TerminalNode, source: Source = None):  # noqa: F811
     return self.symbol.to_position(source)
 
 
 @extension_method(Token)
-def to_position(self: Token, source: Source = None):
+def to_position(self: Token, source: Source = None):  # noqa: F811
     return Position(self.start_point, self.end_point, source)
 
 
 @extension_method(ParseTree)
-def get_original_text(self: ParseTree) -> str:
+def get_original_text(self: ParseTree) -> str:  # noqa: F811
     return self.getText()
 
 
 @extension_method(ParserRuleContext)
-def get_original_text(self: ParserRuleContext) -> str:
+def get_original_text(self: ParserRuleContext) -> str:    # noqa: F811
     a = self.start.start
     b = self.stop.stop
     return self.start.getInputStream().getText(a, b)
@@ -76,7 +75,7 @@ def get_original_text(self: ParserRuleContext) -> str:
 @extension_method(Node)
 def with_parse_tree(self: Node, parse_tree: Optional[ParseTree], source: Source = None):
     """Set the origin of the AST node as a ParseTreeOrigin, providing the parse_tree is not None.
-If the parse_tree is None, no operation is performed."""
+    If the parse_tree is None, no operation is performed."""
     if parse_tree:
         self.origin = ParseTreeOrigin(parse_tree=parse_tree, source=source)
     return self
@@ -97,25 +96,29 @@ def generate_nodes_classes_for_parser(parser_class: type, ns: dict):
                     child_name += suffix
                     field_type = List
                     default_value = field(default_factory=list)
-                    aliases[child_name] = child_name[:-len(suffix)]
+                    aliases[child_name] = child_name[: -len(suffix)]
             fields[child_name] = default_value
             fields["__annotations__"][child_name] = field_type
             property_names.append(child_name)
         name = ast_node_name(name)
         class_def = type(name, (Node,), fields)
         class_def.properties = properties_method(property_names)
-        class_def.from_parse_tree = from_parse_tree_function(class_def, property_names, aliases, ns)
+        class_def.from_parse_tree = from_parse_tree_function(
+            class_def, property_names, aliases, ns
+        )
         ns[name] = dataclass(class_def)
 
 
 def ast_node_name(parse_tree_node_name):
     if parse_tree_node_name.endswith("Context"):
-        parse_tree_node_name = parse_tree_node_name[:-len("Context")]
+        parse_tree_node_name = parse_tree_node_name[: -len("Context")]
     return parse_tree_node_name
 
 
 def properties_method(property_names):
-    return internal_property(lambda node: ((p, getattr(node, p)) for p in property_names))
+    return internal_property(
+        lambda node: ((p, getattr(node, p)) for p in property_names)
+    )
 
 
 def stop_token(node):
@@ -132,17 +135,23 @@ def start_token(node):
         return node.start
 
 
-def make_ast_node_or_value(parse_tree_node, prev_node, ns, parent: Node, source: Source):
+def make_ast_node_or_value(
+    parse_tree_node, prev_node, ns, parent: Node, source: Source
+):
     ast_node_type_name = ast_node_name(type(parse_tree_node).__name__)
     if ast_node_type_name in ns:
-        ast_node = ns[ast_node_type_name].from_parse_tree(parse_tree_node, parent, source)
+        ast_node = ns[ast_node_type_name].from_parse_tree(
+            parse_tree_node, parent, source
+        )
         return ast_node
     else:
         return parse_tree_node.getText()
 
 
 def from_parse_tree_function(node_class, property_names, aliases, ns: dict):
-    def from_parse_tree(parse_tree: ParseTree, parent: Node = None, source: Source = None):
+    def from_parse_tree(
+        parse_tree: ParseTree, parent: Node = None, source: Source = None
+    ):
         node = node_class().with_parent(parent).with_parse_tree(parse_tree, source)
         last_pt_node = parse_tree
         for prop in property_names:
@@ -156,13 +165,20 @@ def from_parse_tree_function(node_class, property_names, aliases, ns: dict):
             if isinstance(prop_val, Sequence) and not isinstance(prop_val, str):
                 children = []
                 for child in prop_val:
-                    children.append(make_ast_node_or_value(child, last_pt_node, ns, node, source))
+                    children.append(
+                        make_ast_node_or_value(child, last_pt_node, ns, node, source)
+                    )
                     last_pt_node = child
                 setattr(node, prop, children)
             elif prop_val is not None:
-                setattr(node, prop, make_ast_node_or_value(prop_val, last_pt_node, ns, node, source))
+                setattr(
+                    node,
+                    prop,
+                    make_ast_node_or_value(prop_val, last_pt_node, ns, node, source),
+                )
                 last_pt_node = prop_val
         return node
+
     return from_parse_tree
 
 

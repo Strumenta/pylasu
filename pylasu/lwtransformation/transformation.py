@@ -4,7 +4,8 @@ from inspect import signature
 from typing import (Any, Callable, Dict, Generic, Iterable, List, Optional,
                     Set, Type, TypeVar, Union)
 
-from pylasu.model import Node, Origin
+from pylasu.lwmodel import ASTNode
+from pylasu.model import Origin
 from pylasu.model.errors import GenericErrorNode
 from pylasu.model.model import concept_of
 from pylasu.model.reflection import PropertyDescription
@@ -12,7 +13,7 @@ from pylasu.transformation.generic_nodes import GenericNode
 from pylasu.validation import Issue, IssueSeverity
 
 Child = TypeVar("Child")
-Output = TypeVar("Output", bound=Node)
+Output = TypeVar("Output", bound=ASTNode)
 Source = TypeVar("Source")
 Target = TypeVar("Target")
 node_factory_constructor_type = Callable[
@@ -27,10 +28,10 @@ node_factory_single_constructor_type = Callable[
 class PropertyRef:
     name: str
 
-    def get(self, node: Node):
+    def get(self, node: ASTNode):
         return getattr(node, self.name)
 
-    def set(self, node: Node, value):
+    def set(self, node: ASTNode, value):
         return setattr(node, self.name, value)
 
 
@@ -97,8 +98,8 @@ class ASTTransformer:
         self.known_classes = dict()
 
     def transform(
-        self, source: Optional[Any], parent: Optional[Node] = None
-    ) -> Optional[Node]:
+        self, source: Optional[Any], parent: Optional[ASTNode] = None
+    ) -> Optional[ASTNode]:
         result = self.transform_into_nodes(source, parent)
         if len(result) == 0:
             return None
@@ -110,8 +111,8 @@ class ASTTransformer:
             )
 
     def transform_into_nodes(
-        self, source: Optional[Any], parent: Optional[Node] = None
-    ) -> List[Node]:
+        self, source: Optional[Any], parent: Optional[ASTNode] = None
+    ) -> List[ASTNode]:
         if source is None:
             return []
         elif isinstance(source, Iterable):
@@ -164,7 +165,7 @@ class ASTTransformer:
         self,
         child_node_factory: ChildNodeFactory,
         source: Any,
-        node: Node,
+        node: ASTNode,
         pd: PropertyDescription,
     ):
         src = child_node_factory.get(self.get_source(node, source))
@@ -179,12 +180,12 @@ class ASTTransformer:
         except Exception as e:
             raise Exception(f"Could not set child {child_node_factory}") from e
 
-    def get_source(self, node: Node, source: Any) -> Any:
+    def get_source(self, node: ASTNode, source: Any) -> Any:
         return source
 
     def make_nodes(
         self, factory: NodeFactory[Source, Target], source: Source
-    ) -> List[Node]:
+    ) -> List[ASTNode]:
         try:
             nodes = factory.constructor(source, self, factory)
             for node in nodes:
@@ -243,25 +244,25 @@ def get_node_constructor_wrapper(decorated_function):  # noqa C901
         try:
             sig.bind(1, 2, 3)
 
-            def wrapper(node: Node, transformer: ASTTransformer, factory):
+            def wrapper(node: ASTNode, transformer: ASTTransformer, factory):
                 return ensure_list(decorated_function(node, transformer, factory))
 
         except TypeError:
             try:
                 sig.bind(1, 2)
 
-                def wrapper(node: Node, transformer: ASTTransformer, _):
+                def wrapper(node: ASTNode, transformer: ASTTransformer, _):
                     return ensure_list(decorated_function(node, transformer))
 
             except TypeError:
                 sig.bind(1)
 
-                def wrapper(node: Node, _, __):
+                def wrapper(node: ASTNode, _, __):
                     return ensure_list(decorated_function(node))
 
     except ValueError:
 
-        def wrapper(node: Node, transformer: ASTTransformer, factory):
+        def wrapper(node: ASTNode, transformer: ASTTransformer, factory):
             return ensure_list(decorated_function(node, transformer, factory))
 
     functools.update_wrapper(wrapper, decorated_function)
@@ -269,7 +270,7 @@ def get_node_constructor_wrapper(decorated_function):  # noqa C901
 
 
 def ast_transformer(
-    node_class: Type[Node], transformer: ASTTransformer, method_name: str = None
+    node_class: Type[ASTNode], transformer: ASTTransformer, method_name: str = None
 ):
     """Decorator to register a function as an AST transformer"""
 
@@ -278,7 +279,7 @@ def ast_transformer(
 
             def transformer_method(
                 self,
-                parent: Optional[Node] = None,
+                parent: Optional[ASTNode] = None,
                 transformer: ASTTransformer = transformer,
             ):
                 return transformer.transform(self, parent)

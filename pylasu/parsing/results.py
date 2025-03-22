@@ -4,7 +4,7 @@ from typing import List
 from antlr4 import ParserRuleContext, Token
 
 from pylasu.model import Source
-from pylasu.validation.validation import WithIssues, IssueType, Issue
+from pylasu.validation.validation import Issue, IssueType, WithIssues
 
 
 @dataclass
@@ -20,6 +20,7 @@ class LexingResult(WithIssues):
 @dataclass
 class IssuesErrorListener:
     """This Error Listener should be used with ANTLR lexers and parsers to capture issues"""
+
     type: IssueType
     source: Source
     issues: WithIssues
@@ -27,11 +28,17 @@ class IssuesErrorListener:
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         self.issues.append(Issue(type=self.type, message=msg))
 
-    def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs):
+    def reportAmbiguity(
+        self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs
+    ):
         pass
 
-    def reportAttemptingFullContext(self, recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs):
+    def reportAttemptingFullContext(
+        self, recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs
+    ):
         pass
 
-    def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
+    def reportContextSensitivity(
+        self, recognizer, dfa, startIndex, stopIndex, prediction, configs
+    ):
         pass

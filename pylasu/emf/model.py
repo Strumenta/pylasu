@@ -1,12 +1,11 @@
 from enum import Enum
 
+from deprecated import deprecated
 from pyecore.ecore import EPackage
 from pyecore.resources import Resource
 
 from pylasu.model import Node
 from pylasu.reflection.support import extension_method
-
-from deprecated import deprecated
 
 
 @deprecated(reason="EMF Support is going to be dropped")
@@ -22,7 +21,7 @@ def find_eclassifier_in_resource(cls: type, resource: Resource):
 def find_eclassifier(self: Resource, cls: type):
     eclass = find_eclassifier_in_resource(cls, self)
     if not eclass:
-        for uri in (self.resource_set.resources if self.resource_set else {}):
+        for uri in self.resource_set.resources if self.resource_set else {}:
             resource = self.resource_set.resources[uri]
             if resource != self:
                 eclass = find_eclassifier_in_resource(cls, resource)

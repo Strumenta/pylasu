@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import Any, Optional
 
 from antlr4 import ParserRuleContext
 from antlr4.tree.Tree import ParseTree
@@ -12,10 +12,13 @@ class ParseTreeToASTTransformer(ASTTransformer):
     """Implements a transformation from an ANTLR parse tree (the output of the parser) to an AST
     (a higher-level representation of the source code)."""
 
-    def transform(self, source: Optional[Any], parent: Optional[Node] = None) -> Optional[Node]:
+    def transform(
+        self, source: Optional[Any], parent: Optional[Node] = None
+    ) -> Optional[Node]:
         """Performs the transformation of a node and, recursively, its descendants. In addition to the overridden
-method, it also assigns the parseTreeNode to the AST node so that it can keep track of its position.
-However, a node factory can override the parseTreeNode of the nodes it creates (but not the parent)."""
+        method, it also assigns the parseTreeNode to the AST node so that it can keep track of its position.
+        However, a node factory can override the parseTreeNode of the nodes it creates (but not the parent).
+        """
         node = super().transform(source, parent)
         if node and node.origin and isinstance(source, ParserRuleContext):
             with_parse_tree(node, source)

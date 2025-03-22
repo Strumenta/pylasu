@@ -2,14 +2,14 @@ import json
 import unittest
 from io import BytesIO, IOBase
 
-from pyecore.ecore import EObject, EPackage, EEnum, EMetaclass, EAttribute, EString
+from pyecore.ecore import (EAttribute, EEnum, EMetaclass, EObject, EPackage,
+                           EString)
 from pyecore.resources import URI
 
-from pylasu.StrumentaLanguageSupport import ASTNode
 from pylasu.emf import MetamodelBuilder
 from pylasu.playground import JsonResource
+from pylasu.StrumentaLanguageSupport import ASTNode
 from tests.fixtures import Box, ReinforcedBox
-
 
 eClass = EPackage('test', nsURI='http://test/1.0', nsPrefix='test')
 nsURI = 'http://test/1.0'
