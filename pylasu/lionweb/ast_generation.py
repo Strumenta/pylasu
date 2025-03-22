@@ -128,7 +128,8 @@ def ast_generation(click, language: Language, output):
         if isinstance(classifier, Concept):
             bases = []
             if classifier.get_extended_concept().id == StarLasuBaseLanguage.get_astnode(LionWebVersion.V2023_1).id:
-                bases.append('Node')
+                if len(classifier.get_implemented())==0:
+                    bases.append('Node')
             else:
                 bases.append(classifier.get_extended_concept().get_name())
             for i in classifier.get_implemented():
@@ -152,8 +153,8 @@ def ast_generation(click, language: Language, output):
                     bases.append('StarLasuNamed')
                 else:
                     bases.append(i.get_name())
-            if classifier.is_abstract():
-                bases.append('ABC')
+            #if classifier.is_abstract():
+            #    bases.append('ABC')
             dataclass_decorator = ast.Name(id="dataclass", ctx=ast.Load())
             classdef = ast.ClassDef(classifier.get_name(), bases=bases,
                                     keywords=[],
@@ -217,7 +218,7 @@ def ast_generation(click, language: Language, output):
             bases = []
             if len(classifier.get_extended_interfaces()) == 0:
                 bases.append("Node")
-                bases.append("ABC")
+                # bases.append("ABC")
 
             classdef = ast.ClassDef(classifier.get_name(), bases=bases,
                                     keywords=[],

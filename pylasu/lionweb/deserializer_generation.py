@@ -172,7 +172,7 @@ def deserializer_generation(click, language: Language, output):
         level=0
     )
     import_ast = ast.ImportFrom(
-        module='ast',
+        module='.ast',
         names=[ast.alias(name=e.get_name(), asname=None) for e in language.get_elements() if not isinstance(e, PrimitiveType)],
         level=0
     )
