@@ -14,15 +14,22 @@ def make_cond(enumeration_name: str, member_name: str):
         left=ast.Name(id="serialized", ctx=ast.Load()),
         ops=[ast.Eq()],
         comparators=[
-            ast.Attribute(
-                value=ast.Attribute(
-                    value=ast.Name(id=enumeration_name, ctx=ast.Load()),
-                    attr=member_name,
-                    ctx=ast.Load()
-                ),
-                attr="value",
-                ctx=ast.Load()
-            )
+            ast.JoinedStr(values=[
+                ast.Constant(value=f"{enumeration_name}-"),
+                ast.FormattedValue(
+                    value=ast.Attribute(
+                        value=ast.Attribute(
+                            value=ast.Name(id=enumeration_name, ctx=ast.Load()),
+                            attr=member_name,
+                            ctx=ast.Load()
+                        ),
+                        attr="value",
+                        ctx=ast.Load()
+                    ),
+                    conversion=-1,
+                    format_spec=None
+                )
+            ])
         ]
     )
 

@@ -3,6 +3,7 @@ from pathlib import Path
 
 import astor
 from lionwebpython.language import Language, Concept
+from lionwebpython.language.primitive_type import PrimitiveType
 
 from pylasu.lionweb.utils import to_snake_case
 
@@ -328,6 +329,20 @@ def language_generation(click, language: Language, output, language_name: str):
                     func=ast.Attribute(
                         value=ast.Name(id="LANGUAGE", ctx=ast.Load()),
                         attr="get_concept_by_name",
+                        ctx=ast.Load()
+                    ),
+                    args=[ast.Constant(value=element.get_name())],
+                    keywords=[]
+                )
+            )
+            module.body.append(assign)
+        if isinstance(element, PrimitiveType):
+            assign = ast.Assign(
+                targets=[ast.Name(id=to_snake_case(element.get_name()).upper(), ctx=ast.Store())],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        value=ast.Name(id="LANGUAGE", ctx=ast.Load()),
+                        attr="get_primitive_type_by_name",
                         ctx=ast.Load()
                     ),
                     args=[ast.Constant(value=element.get_name())],

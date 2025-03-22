@@ -134,7 +134,7 @@ def _generate_constructor(concept: Concept) -> ast.FunctionDef:
             ],
             kwonlyargs=[], kw_defaults=[],
             defaults = [
-                ast.Constant(value=to_snake_case(concept.get_name()).upper())
+                ast.Name(id=to_snake_case(concept.get_name()).upper())
             ]
         ),
         body=[
@@ -149,7 +149,7 @@ def _generate_constructor(concept: Concept) -> ast.FunctionDef:
                 keywords=[
                     ast.keyword(arg='id', value=ast.Name(id='id', ctx=ast.Load())),
                     ast.keyword(arg='position', value=ast.Name(id='position', ctx=ast.Load())),
-                    ast.keyword(arg='concept', value=ast.Name(id=ast.Name(id=to_snake_case(concept.get_name()).upper(), ctx=ast.Load()))),
+                    ast.keyword(arg='concept', value=ast.Name(id='concept', ctx=ast.Load())),
                 ]
             )),
             # self.set_id(id)
@@ -194,7 +194,7 @@ def _generate_constructor(concept: Concept) -> ast.FunctionDef:
 def _generate_from_concept(classifier: Concept) -> ClassDef:
     bases = []
     if classifier.get_extended_concept().id == StarLasuBaseLanguage.get_astnode(LionWebVersion.V2023_1).id:
-        if len(classifier.get_implemented()) == 0:
+        if len([i for i in classifier.get_implemented() if i.get_language().get_name() != 'com.strumenta.StarLasu']) == 0:
             bases.append('ASTNode')
     else:
         bases.append(classifier.get_extended_concept().get_name())
