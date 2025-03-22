@@ -310,7 +310,6 @@ def language_generation(click, language: Language, output, language_name: str):
         value=ast.Call(func=ast.Name(id="_load_language", ctx=ast.Load()), args=[], keywords=[])
     )
 
-
     module = ast.Module(
         body=imports + [
             load_starlasu_func,

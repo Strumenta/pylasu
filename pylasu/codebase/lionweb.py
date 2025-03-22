@@ -1,48 +1,52 @@
-import base64
 import re
 from typing import Optional
 
 from lionwebpython.language import Language, Concept, Property, Containment
-from lionwebpython.language.classifier import Classifier
 from lionwebpython.language.lioncore_builtins import LionCoreBuiltins
+from lionwebpython.lionweb_version import LionWebVersion
 from lionwebpython.model.classifier_instance_utils import ClassifierInstanceUtils
 from lionwebpython.model.impl.dynamic_node import DynamicNode
 from lionwebpython.model.node import Node
-from lionwebpython.lionweb_version import LionWebVersion
 from lionwebpython.serialization.json_serialization import JsonSerialization
 
 LW_REFERENCE_VERSION = LionWebVersion.V2023_1
 
-CODEBASE_LANGUAGE = Language(lion_web_version=LW_REFERENCE_VERSION, name="Codebase",
-                             id="strumenta-codebase", version="1", key="strumenta-codebase")
+CODEBASE_LANGUAGE = Language(
+    lion_web_version=LW_REFERENCE_VERSION, name="Codebase",
+    id="strumenta-codebase", version="1", key="strumenta-codebase")
 
-CODEBASE_FILE = Concept(lion_web_version=LW_REFERENCE_VERSION, name="CodebaseFile",
-                        id="strumenta-codebase-file", key="strumenta-codebase-file")
+CODEBASE_FILE = Concept(
+    lion_web_version=LW_REFERENCE_VERSION, name="CodebaseFile",
+    id="strumenta-codebase-file", key="strumenta-codebase-file")
 CODEBASE_LANGUAGE.add_element(CODEBASE_FILE)
 
-CODEBASE_FILE_LANGUAGE_NAME = Property(lion_web_version=LW_REFERENCE_VERSION, name="language_name",
-                        id="strumenta-codebase-file-language-name")
+CODEBASE_FILE_LANGUAGE_NAME = Property(
+    lion_web_version=LW_REFERENCE_VERSION, name="language_name",
+    id="strumenta-codebase-file-language-name")
 CODEBASE_FILE.add_feature(CODEBASE_FILE_LANGUAGE_NAME)
 CODEBASE_FILE_LANGUAGE_NAME.set_key("strumenta-codebase-file-language-name")
 CODEBASE_FILE_LANGUAGE_NAME.set_optional(False)
 CODEBASE_FILE_LANGUAGE_NAME.set_type(LionCoreBuiltins.get_string(LW_REFERENCE_VERSION))
 
-CODEBASE_FILE_RELATIVE_PATH = Property(lion_web_version=LW_REFERENCE_VERSION, name="relative_path",
-                        id="strumenta-codebase-file-relative-path")
+CODEBASE_FILE_RELATIVE_PATH = Property(
+    lion_web_version=LW_REFERENCE_VERSION, name="relative_path",
+    id="strumenta-codebase-file-relative-path")
 CODEBASE_FILE.add_feature(CODEBASE_FILE_RELATIVE_PATH)
 CODEBASE_FILE_RELATIVE_PATH.set_key("strumenta-codebase-file-relative-path")
 CODEBASE_FILE_RELATIVE_PATH.set_optional(False)
 CODEBASE_FILE_RELATIVE_PATH.set_type(LionCoreBuiltins.get_string(LW_REFERENCE_VERSION))
 
-CODEBASE_FILE_CODE = Property(lion_web_version=LW_REFERENCE_VERSION, name="code",
-                        id="strumenta-codebase-file-code")
+CODEBASE_FILE_CODE = Property(
+    lion_web_version=LW_REFERENCE_VERSION, name="code",
+    id="strumenta-codebase-file-code")
 CODEBASE_FILE.add_feature(CODEBASE_FILE_CODE)
 CODEBASE_FILE_CODE.set_key("strumenta-codebase-file-code")
 CODEBASE_FILE_CODE.set_optional(False)
 CODEBASE_FILE_CODE.set_type(LionCoreBuiltins.get_string(LW_REFERENCE_VERSION))
 
-CODEBASE_FILE_AST = Containment(lion_web_version=LW_REFERENCE_VERSION, name="ast",
-                        id="strumenta-codebase-file-ast")
+CODEBASE_FILE_AST = Containment(
+    lion_web_version=LW_REFERENCE_VERSION, name="ast",
+    id="strumenta-codebase-file-ast")
 CODEBASE_FILE.add_feature(CODEBASE_FILE_AST)
 CODEBASE_FILE_AST.set_key("strumenta-codebase-file-ast")
 CODEBASE_FILE_AST.set_optional(True)
@@ -75,6 +79,7 @@ def to_lionweb_identifier(s: str) -> str:
 
     # Ensure the identifier is not empty
     return s if s else "_"
+
 
 class CodebaseFile(DynamicNode):
     language_name: str
@@ -127,7 +132,8 @@ class CodebaseFile(DynamicNode):
                 self.remove_child(child=children[0])
             self.add_child(containment=containment, child=value)
 
-    def __init__(self, language_name: str, relative_path: str, code: str, ast: Optional[Node] = None, id: Optional[str] = None):
+    def __init__(self, language_name: str, relative_path: str, code: str, ast: Optional[Node] = None,
+                 id: Optional[str] = None):
         super().__init__(id or f"codebase_file_{to_lionweb_identifier(relative_path)}", CODEBASE_FILE)
         self.language_name = language_name
         self.relative_path = relative_path
@@ -135,8 +141,9 @@ class CodebaseFile(DynamicNode):
         self.ast = ast
 
 
-def codebase_deserializer(classifier, serialized_instance,
-    deserialized_instances_by_id, properties_values) -> CodebaseFile:
+def codebase_deserializer(
+        classifier, serialized_instance,
+        deserialized_instances_by_id, properties_values) -> CodebaseFile:
     language_name = properties_values[classifier.get_property_by_name('language_name')]
     relative_path = properties_values[classifier.get_property_by_name('relative_path')]
     code = properties_values[classifier.get_property_by_name('code')]

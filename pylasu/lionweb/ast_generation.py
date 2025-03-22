@@ -133,9 +133,7 @@ def _generate_constructor(concept: Concept) -> ast.FunctionDef:
                 ast.arg(arg="concept", annotation=ast.Name(id="Concept", ctx=ast.Load()))
             ],
             kwonlyargs=[], kw_defaults=[],
-            defaults = [
-                ast.Name(id=to_snake_case(concept.get_name()).upper())
-            ]
+            defaults=[ast.Name(id=to_snake_case(concept.get_name()).upper())]
         ),
         body=[
             # super().__init__(id=id, position=position, concept=concept)
@@ -194,7 +192,8 @@ def _generate_constructor(concept: Concept) -> ast.FunctionDef:
 def _generate_from_concept(classifier: Concept) -> ClassDef:
     bases = []
     if classifier.get_extended_concept().id == StarLasuBaseLanguage.get_astnode(LionWebVersion.V2023_1).id:
-        if len([i for i in classifier.get_implemented() if i.get_language().get_name() != 'com.strumenta.StarLasu']) == 0:
+        if len([i for i in classifier.get_implemented() if i.get_language().get_name()
+                != 'com.strumenta.StarLasu']) == 0:
             bases.append('ASTNode')
     else:
         bases.append(classifier.get_extended_concept().get_name())
@@ -282,7 +281,8 @@ def ast_generation(click, language: Language, output, language_name=str):
     # from rpg.language import CONTROL_SPECIFICATION
     import_concepts = ast.ImportFrom(
         module=f"{language_name.lower()}.language",
-        names=[ast.alias(name=to_snake_case(e.get_name()).upper(), asname=None)for e in language.get_elements() if isinstance(e, Concept)],
+        names=[ast.alias(name=to_snake_case(e.get_name()).upper(),
+                         asname=None)for e in language.get_elements() if isinstance(e, Concept)],
         level=0
     )
     module = ast.Module(body=[import_abc, import_dataclass, import_typing, import_enum, import_starlasu, import_node,
