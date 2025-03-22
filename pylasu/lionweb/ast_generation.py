@@ -117,11 +117,82 @@ def _generate_from_feature(feature: Feature, classdef: ClassDef):
         raise ValueError()
 
 
+def _generate_constructor() -> ast.FunctionDef:
+    return ast.FunctionDef(
+        name="__init__",
+        args=ast.arguments(
+            posonlyargs=[],
+            args=[
+                ast.arg(arg="self", annotation=None),
+                ast.arg(arg="id", annotation=ast.Name(id="str", ctx=ast.Load())),
+                ast.arg(arg="concept", annotation=ast.Name(id="Concept", ctx=ast.Load())),
+                ast.arg(arg="position", annotation=ast.Subscript(
+                    value=ast.Name(id="Optional", ctx=ast.Load()),
+                    slice=ast.Name(id="Position", ctx=ast.Load()),
+                    ctx=ast.Load()
+                )),
+            ],
+            kwonlyargs=[], kw_defaults=[], defaults=[]
+        ),
+        body=[
+            # super().__init__(id=id, position=position, concept=concept)
+            ast.Expr(value=ast.Call(
+                func=ast.Attribute(
+                    value=ast.Call(func=ast.Name(id='super', ctx=ast.Load()), args=[], keywords=[]),
+                    attr='__init__',
+                    ctx=ast.Load()
+                ),
+                args=[],
+                keywords=[
+                    ast.keyword(arg='id', value=ast.Name(id='id', ctx=ast.Load())),
+                    ast.keyword(arg='position', value=ast.Name(id='position', ctx=ast.Load())),
+                    ast.keyword(arg='concept', value=ast.Name(id='concept', ctx=ast.Load())),
+                ]
+            )),
+            # self.set_id(id)
+            ast.Expr(value=ast.Call(
+                func=ast.Attribute(value=ast.Name(id='self', ctx=ast.Load()), attr='set_id', ctx=ast.Load()),
+                args=[ast.Name(id='id', ctx=ast.Load())],
+                keywords=[]
+            )),
+            # # self._set_containment_single_value(..., ...)
+            # ast.Expr(value=ast.Call(
+            #     func=ast.Attribute(
+            #         value=ast.Name(id='self', ctx=ast.Load()),
+            #         attr='_set_containment_single_value',
+            #         ctx=ast.Load()
+            #     ),
+            #     args=[],
+            #     keywords=[
+            #         ast.keyword(
+            #             arg='containment',
+            #             value=ast.Call(
+            #                 func=ast.Attribute(
+            #                     value=ast.Name(id='concept', ctx=ast.Load()),
+            #                     attr='get_containment_by_name',
+            #                     ctx=ast.Load()
+            #                 ),
+            #                 args=[ast.Constant(value='externalName')],
+            #                 keywords=[]
+            #             )
+            #         ),
+            #         ast.keyword(
+            #             arg='value',
+            #             value=ast.Name(id='externalName', ctx=ast.Load())
+            #         )
+            #     ]
+            # ))
+        ],
+        decorator_list=[],
+        returns=None
+    )
+
+
 def _generate_from_concept(classifier: Concept) -> ClassDef:
     bases = []
     if classifier.get_extended_concept().id == StarLasuBaseLanguage.get_astnode(LionWebVersion.V2023_1).id:
         if len(classifier.get_implemented()) == 0:
-            bases.append('Node')
+            bases.append('ASTNode')
     else:
         bases.append(classifier.get_extended_concept().get_name())
     special_interfaces = {
@@ -132,6 +203,7 @@ def _generate_from_concept(classifier: Concept) -> ClassDef:
         'com-strumenta-StarLasu-Documentation-id': 'StarLasuDocumentation',
         'com-strumenta-StarLasu-BehaviorDeclaration-id': 'StarLasuBehaviorDeclaration',
         'com-strumenta-StarLasu-EntityDeclaration-id': 'StarLasuEntityDeclaration',
+        'com-strumenta-StarLasu-TypeAnnotation-id': 'StarLasuTypeAnnotation',
         'LionCore-builtins-INamed': 'StarLasuNamed'
     }
     for i in classifier.get_implemented():
@@ -144,11 +216,13 @@ def _generate_from_concept(classifier: Concept) -> ClassDef:
     dataclass_decorator = ast.Name(id="dataclass", ctx=ast.Load())
     classdef = ast.ClassDef(classifier.get_name(), bases=bases,
                             keywords=[],
-                            body=[ast.Pass()],
+                            body=[],
                             decorator_list=[dataclass_decorator])
 
     for feature in classifier.get_features():
         _generate_from_feature(feature, classdef)
+
+    classdef.body.append(_generate_constructor())
 
     return classdef
 
@@ -188,11 +262,22 @@ def ast_generation(click, language: Language, output):
         level=0
     )
     import_node = ast.ImportFrom(
-        module='pylasu.model',
-        names=[ast.alias(name='Node', asname=None)],
+        module='pylasu.lwmodel',
+        names=[ast.alias(name='ASTNode', asname=None)],
         level=0
     )
-    module = ast.Module(body=[import_abc, import_dataclass, import_typing, import_enum, import_starlasu, import_node],
+    import_language = ast.ImportFrom(
+        module='lionwebpython.language',
+        names=[ast.alias(name='Concept', asname=None)],
+        level=0
+    )
+    import_model = ast.ImportFrom(
+        module='pylasu.model',
+        names=[ast.alias(name='Position', asname=None)],
+        level=0
+    )
+    module = ast.Module(body=[import_abc, import_dataclass, import_typing, import_enum, import_starlasu, import_node,
+                              import_language, import_model],
                         type_ignores=[])
 
     for element in language.get_elements():
@@ -230,7 +315,7 @@ def ast_generation(click, language: Language, output):
         elif isinstance(classifier, Interface):
             bases = []
             if len(classifier.get_extended_interfaces()) == 0:
-                bases.append("Node")
+                bases.append("ASTNode")
                 # bases.append("ABC")
 
             classdef = ast.ClassDef(classifier.get_name(), bases=bases,

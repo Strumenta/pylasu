@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Dict, Optional
 from lionwebpython.language import Language, Concept
 from lionwebpython.language.lioncore_builtins import LionCoreBuiltins
 from lionwebpython.language.primitive_type import PrimitiveType
+from lionwebpython.lionweb_version import LionWebVersion
 
 from pylasu.model import Point, Position
 

@@ -102,6 +102,42 @@ def generate_concept_deserializer(concept: Concept) -> ast.FunctionDef:
     for f in concept.all_features():
         field_name = calculate_field_name(f)
         constructor_assignments.append(ast.keyword(arg=field_name, value=ast.Constant(value=f.get_name())))
+
+    return_stmt = ast.Return(
+        value=ast.Call(
+            func=ast.Name(id=concept.get_name(), ctx=ast.Load()),
+            args=[],
+            keywords=[
+                # id=serialized_instance.id
+                ast.keyword(
+                    arg='id',
+                    value=ast.Attribute(
+                        value=ast.Name(id='serialized_instance', ctx=ast.Load()),
+                        attr='id',
+                        ctx=ast.Load()
+                    )
+                ),
+                # position=properties_values[classifier.get_property_by_name('position')]
+                ast.keyword(
+                    arg='position',
+                    value=ast.Subscript(
+                        value=ast.Name(id='properties_values', ctx=ast.Load()),
+                        slice=ast.Call(
+                            func=ast.Attribute(
+                                value=ast.Name(id='classifier', ctx=ast.Load()),
+                                attr='get_property_by_name',
+                                ctx=ast.Load()
+                            ),
+                            args=[ast.Constant(value='position')],
+                            keywords=[]
+                        ),
+                        ctx=ast.Load()
+                    )
+                )
+            ]
+        )
+    )
+
     return ast.FunctionDef(
         name=f"_deserialize_{to_snake_case(concept.get_name())}",
         args=ast.arguments(
@@ -117,13 +153,7 @@ def generate_concept_deserializer(concept: Concept) -> ast.FunctionDef:
             defaults=[]
         ),
         body=[
-            ast.Return(
-                value=ast.Call(
-                    func=ast.Name(id=concept.get_name(), ctx=ast.Load()),
-                    args=[],
-                    keywords=constructor_assignments
-                )
-            )
+            return_stmt
         ],
         decorator_list=[],
         returns=ast.Name(id=concept.get_name(), ctx=ast.Load())
@@ -165,8 +195,8 @@ def deserializer_generation(click, language: Language, output):
         level=0
     )
     import_node = ast.ImportFrom(
-        module='pylasu.model',
-        names=[ast.alias(name='Node', asname=None)],
+        module='pylasu.lwmodel',
+        names=[ast.alias(name='ASTNode', asname=None)],
         level=0
     )
     import_ast = ast.ImportFrom(
@@ -176,7 +206,7 @@ def deserializer_generation(click, language: Language, output):
         level=0
     )
     import_primitives = ast.ImportFrom(
-        module='primitive_types',
+        module='.primitive_types',
         names=[ast.alias(name=e.get_name(), asname=None) for e in language.get_elements()
                if isinstance(e, PrimitiveType)],
         level=0
