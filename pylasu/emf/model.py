@@ -6,7 +6,10 @@ from pyecore.resources import Resource
 from pylasu.model import Node
 from pylasu.support import extension_method
 
+from deprecated import deprecated
 
+
+@deprecated(reason="EMF Support is going to be dropped")
 def find_eclassifier_in_resource(cls: type, resource: Resource):
     pkg_name = cls.__module__
     for p in resource.contents:
@@ -14,6 +17,7 @@ def find_eclassifier_in_resource(cls: type, resource: Resource):
             return p.getEClassifier(cls.__name__)
 
 
+@deprecated(reason="EMF Support is going to be dropped")
 @extension_method(Resource)
 def find_eclassifier(self: Resource, cls: type):
     eclass = find_eclassifier_in_resource(cls, self)
@@ -27,6 +31,7 @@ def find_eclassifier(self: Resource, cls: type):
     return eclass
 
 
+@deprecated(reason="EMF Support is going to be dropped")
 @extension_method(Node)
 def to_eobject(self: Node, resource: Resource, mappings=None):
     if self is None:
@@ -50,6 +55,7 @@ def to_eobject(self: Node, resource: Resource, mappings=None):
     return eobject
 
 
+@deprecated(reason="EMF Support is going to be dropped")
 def translate_value(v, resource, mappings):
     if isinstance(v, Enum):
         enum_type = resource.find_eclassifier(type(v))

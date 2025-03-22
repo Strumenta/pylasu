@@ -13,7 +13,10 @@ from pylasu.model.model import InternalField
 from pylasu.reflection import get_type_annotations
 from pylasu.reflection.reflection import get_type_origin, is_enum_type, is_sequence_type, get_type_arguments
 
+from deprecated import deprecated
 
+
+@deprecated(reason="EMF Support is going to be dropped")
 def resolve_bases(bases):
     """Resolve MRO entries dynamically as specified by PEP 560."""
     if hasattr(types, "resolve_bases"):
@@ -38,6 +41,7 @@ def resolve_bases(bases):
     return tuple(new_bases)
 
 
+@deprecated(reason="EMF Support is going to be dropped")
 class MetamodelBuilder:
     def __init__(self, package_name: str, ns_uri: str, ns_prefix: str = None, resource: Resource = None,
                  base_node_class: type = Node):
@@ -170,6 +174,7 @@ class MetamodelBuilder:
 update_opposite = ECollection._update_opposite
 
 
+@deprecated(reason="EMF Support is going to be dropped")
 def update_opposite_if_not_none(self, owner, new_value, remove=False):
     if owner:
         update_opposite(self, owner, new_value, remove)
