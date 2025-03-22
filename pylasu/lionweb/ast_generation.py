@@ -13,7 +13,7 @@ from lionwebpython.language.reference import Reference
 from lionwebpython.lionweb_version import LionWebVersion
 
 from pylasu.lionweb.starlasu import StarLasuBaseLanguage
-from pylasu.lionweb.utils import calculate_field_name
+from pylasu.lionweb.utils import calculate_field_name, to_snake_case
 
 
 def _identify_topological_deps(classifiers: List[Classifier], id_to_concept) -> Dict[str, List[str]]:
@@ -117,7 +117,7 @@ def _generate_from_feature(feature: Feature, classdef: ClassDef):
         raise ValueError()
 
 
-def _generate_constructor() -> ast.FunctionDef:
+def _generate_constructor(concept: Concept) -> ast.FunctionDef:
     return ast.FunctionDef(
         name="__init__",
         args=ast.arguments(
@@ -125,7 +125,6 @@ def _generate_constructor() -> ast.FunctionDef:
             args=[
                 ast.arg(arg="self", annotation=None),
                 ast.arg(arg="id", annotation=ast.Name(id="str", ctx=ast.Load())),
-                ast.arg(arg="concept", annotation=ast.Name(id="Concept", ctx=ast.Load())),
                 ast.arg(arg="position", annotation=ast.Subscript(
                     value=ast.Name(id="Optional", ctx=ast.Load()),
                     slice=ast.Name(id="Position", ctx=ast.Load()),
@@ -146,7 +145,7 @@ def _generate_constructor() -> ast.FunctionDef:
                 keywords=[
                     ast.keyword(arg='id', value=ast.Name(id='id', ctx=ast.Load())),
                     ast.keyword(arg='position', value=ast.Name(id='position', ctx=ast.Load())),
-                    ast.keyword(arg='concept', value=ast.Name(id='concept', ctx=ast.Load())),
+                    ast.keyword(arg='concept', value=ast.Name(id=ast.Name(id=to_snake_case(concept.get_name()).upper(), ctx=ast.Load()))),
                 ]
             )),
             # self.set_id(id)
@@ -222,12 +221,12 @@ def _generate_from_concept(classifier: Concept) -> ClassDef:
     for feature in classifier.get_features():
         _generate_from_feature(feature, classdef)
 
-    classdef.body.append(_generate_constructor())
+    classdef.body.append(_generate_constructor(classifier))
 
     return classdef
 
 
-def ast_generation(click, language: Language, output):
+def ast_generation(click, language: Language, output, language_name=str):
     import_abc = ast.ImportFrom(
         module='abc',
         names=[ast.alias(name='ABC', asname=None)],
@@ -276,8 +275,14 @@ def ast_generation(click, language: Language, output):
         names=[ast.alias(name='Position', asname=None)],
         level=0
     )
+    # from rpg.language import CONTROL_SPECIFICATION
+    import_concepts = ast.ImportFrom(
+        module=f"{language_name.lower()}.language",
+        names=[ast.alias(name=to_snake_case(e.get_name()).upper(), asname=None)for e in language.get_elements() if isinstance(e, Concept)],
+        level=0
+    )
     module = ast.Module(body=[import_abc, import_dataclass, import_typing, import_enum, import_starlasu, import_node,
-                              import_language, import_model],
+                              import_language, import_model, import_concepts],
                         type_ignores=[])
 
     for element in language.get_elements():
