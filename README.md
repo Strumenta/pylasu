@@ -6,6 +6,10 @@
 
 Pylasu is an AST Library in the [StarLasu](https://github.com/Strumenta/StarLasu) family, targeting the Python language. [Documentation](https://pylasu.readthedocs.io) is on Read the Docs.
 
+## Requirements
+
+Python 3.8 to 3.13 are supported.
+
 ## Linting
 
 ```shell
