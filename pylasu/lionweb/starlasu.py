@@ -1,9 +1,8 @@
-from typing import TYPE_CHECKING, Dict, Optional, cast
+from typing import TYPE_CHECKING, Dict, Optional
 
 from lionwebpython.language import Language, Concept
 from lionwebpython.language.lioncore_builtins import LionCoreBuiltins
 from lionwebpython.language.primitive_type import PrimitiveType
-from lionwebpython.lionweb_version import LionWebVersion
 
 from pylasu.model import Point, Position
 
@@ -11,9 +10,7 @@ from pylasu.model import Point, Position
 class StarLasuBaseLanguage(Language):
     if TYPE_CHECKING:
         from lionwebpython.language.concept import Concept
-        from lionwebpython.language.interface import Interface
         from lionwebpython.language.primitive_type import PrimitiveType
-        from lionwebpython.language.property import Property
         from lionwebpython.lionweb_version import LionWebVersion
         from lionwebpython.utils.id_utils import IdUtils
 
@@ -41,18 +38,22 @@ class StarLasuBaseLanguage(Language):
         self.set_key("com_strumenta_starlasu")
         self.set_version(version)
 
-        self.char = PrimitiveType(lion_web_version=lion_web_version, language=self,
-                                  name="Char", id=f"com-strumenta-StarLasu-Char-id{version_id_suffix}",
-                                  key="com_strumenta_starlasu-Char-key")
-        self.point = PrimitiveType(lion_web_version=lion_web_version, language=self,
-                                  name="Point", id=f"com-strumenta-StarLasu-Point-id{version_id_suffix}",
-                                  key="com_strumenta_starlasu-Point-key")
-        self.position = PrimitiveType(lion_web_version=lion_web_version, language=self,
-                                   name="Position", id=f"com-strumenta-StarLasu-Position-id{version_id_suffix}",
-                                   key="com_strumenta_starlasu-Position-key")
-        self.astnode = Concept(lion_web_version=lion_web_version, language=self,
-                               name="ASTNode", key="com_strumenta_starlasu-ASTNode-key",
-                               id="com-strumenta-StarLasu-ASTNode-id")
+        self.char = PrimitiveType(
+            lion_web_version=lion_web_version, language=self,
+            name="Char", id=f"com-strumenta-StarLasu-Char-id{version_id_suffix}",
+            key="com_strumenta_starlasu-Char-key")
+        self.point = PrimitiveType(
+            lion_web_version=lion_web_version, language=self,
+            name="Point", id=f"com-strumenta-StarLasu-Point-id{version_id_suffix}",
+            key="com_strumenta_starlasu-Point-key")
+        self.position = PrimitiveType(
+            lion_web_version=lion_web_version, language=self,
+            name="Position", id=f"com-strumenta-StarLasu-Position-id{version_id_suffix}",
+            key="com_strumenta_starlasu-Position-key")
+        self.astnode = Concept(
+            lion_web_version=lion_web_version, language=self,
+            name="ASTNode", key="com_strumenta_starlasu-ASTNode-key",
+            id="com-strumenta-StarLasu-ASTNode-id")
 
     @classmethod
     def get_astnode(
@@ -73,6 +74,7 @@ class StarLasuBaseLanguage(Language):
             cls._instances[lion_web_version] = StarLasuBaseLanguage(lion_web_version)
 
         return cls._instances[lion_web_version]
+
 
 def position_deserializer(serialized_value, is_required):
     parts = serialized_value.split("-")

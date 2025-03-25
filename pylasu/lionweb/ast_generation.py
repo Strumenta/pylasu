@@ -1,10 +1,11 @@
 import ast
 import keyword
+from _ast import ClassDef
 from pathlib import Path
 from typing import List, Dict
 
 import astor
-from lionwebpython.language import Language, Concept, Interface, Containment, Property
+from lionwebpython.language import Language, Concept, Interface, Containment, Property, Feature
 from lionwebpython.language.classifier import Classifier
 from lionwebpython.language.enumeration import Enumeration
 from lionwebpython.language.primitive_type import PrimitiveType
@@ -15,10 +16,7 @@ from pylasu.lionweb.starlasu import StarLasuBaseLanguage
 from pylasu.lionweb.utils import calculate_field_name
 
 
-def topological_classifiers_sort(classifiers: List[Classifier]) -> List[Classifier]:
-    id_to_concept = {el.get_id(): el for el in classifiers}
-
-    # Build graph edges: child -> [parents]
+def _identify_topological_deps(classifiers: List[Classifier], id_to_concept) -> Dict[str, List[str]]:
     graph: Dict[str, List[str]] = {el.get_id(): [] for el in classifiers}
     for c in classifiers:
         if isinstance(c, Concept):
@@ -34,6 +32,14 @@ def topological_classifiers_sort(classifiers: List[Classifier]) -> List[Classifi
             pass
         else:
             raise ValueError()
+    return graph
+
+
+def topological_classifiers_sort(classifiers: List[Classifier]) -> List[Classifier]:
+    id_to_concept = {el.get_id(): el for el in classifiers}
+
+    # Build graph edges: child -> [parents]
+    graph: Dict[str, List[str]] = _identify_topological_deps(classifiers, id_to_concept)
 
     visited = set()
     sorted_list = []
@@ -52,6 +58,100 @@ def topological_classifiers_sort(classifiers: List[Classifier]) -> List[Classifi
         visit(c.get_id())
 
     return sorted_list
+
+
+def _generate_from_containment(feature: Containment, classdef: ClassDef):
+    field_name = calculate_field_name(feature)
+    type = feature.get_type().get_name()
+    if feature.is_multiple():
+        type = f"List[{type}]"
+    elif feature.is_optional():
+        type = f"Optional[{type}]"
+    field = ast.AnnAssign(
+        target=ast.Name(id=field_name, ctx=ast.Store()),
+        annotation=ast.Constant(value=type),
+        value=None,
+        simple=1,
+    )
+    if len(classdef.body) == 1 and isinstance(classdef.body[0], ast.Pass):
+        classdef.body = []
+    classdef.body.append(field)
+
+
+def _generate_from_feature(feature: Feature, classdef: ClassDef):
+    if isinstance(feature, Containment):
+        _generate_from_containment(feature, classdef)
+    elif isinstance(feature, Reference):
+        field_name = feature.get_name()
+        if field_name in keyword.kwlist:
+            field_name = f"{field_name}_"
+        type = f"ReferenceByName[{feature.get_type().get_name()}]"
+        if feature.is_optional():
+            type = f"Optional[{type}]"
+        field = ast.AnnAssign(
+            target=ast.Name(id=field_name, ctx=ast.Store()),
+            annotation=ast.Constant(value=type),
+            value=None,
+            simple=1,
+        )
+        if len(classdef.body) == 1 and isinstance(classdef.body[0], ast.Pass):
+            classdef.body = []
+        classdef.body.append(field)
+    elif isinstance(feature, Property):
+        field_name = feature.get_name()
+        if field_name in keyword.kwlist:
+            field_name = f"{field_name}_"
+        type = feature.get_type().get_name()
+        if feature.is_optional():
+            type = f"Optional[{type}]"
+        field = ast.AnnAssign(
+            target=ast.Name(id=field_name, ctx=ast.Store()),
+            annotation=ast.Constant(value=type),
+            value=None,
+            simple=1,
+        )
+        if len(classdef.body) == 1 and isinstance(classdef.body[0], ast.Pass):
+            classdef.body = []
+        classdef.body.append(field)
+    else:
+        raise ValueError()
+
+
+def _generate_from_concept(classifier: Concept) -> ClassDef:
+    bases = []
+    if classifier.get_extended_concept().id == StarLasuBaseLanguage.get_astnode(LionWebVersion.V2023_1).id:
+        if len(classifier.get_implemented()) == 0:
+            bases.append('Node')
+    else:
+        bases.append(classifier.get_extended_concept().get_name())
+    special_interfaces = {
+        'com-strumenta-StarLasu-Expression-id': 'StarLasuExpression',
+        'com-strumenta-StarLasu-Statement-id': 'StarLasuStatement',
+        'com-strumenta-StarLasu-PlaceholderElement-id': 'StarLasuPlaceholderElement',
+        'com-strumenta-StarLasu-Parameter-id': 'StarLasuParameter',
+        'com-strumenta-StarLasu-Documentation-id': 'StarLasuDocumentation',
+        'com-strumenta-StarLasu-BehaviorDeclaration-id': 'StarLasuBehaviorDeclaration',
+        'com-strumenta-StarLasu-EntityDeclaration-id': 'StarLasuEntityDeclaration',
+        'LionCore-builtins-INamed': 'StarLasuNamed'
+    }
+    for i in classifier.get_implemented():
+        if i.get_id() in special_interfaces:
+            bases.append(special_interfaces[i.get_id()])
+        else:
+            bases.append(i.get_name())
+    # if classifier.is_abstract():
+    #    bases.append('ABC')
+    dataclass_decorator = ast.Name(id="dataclass", ctx=ast.Load())
+    classdef = ast.ClassDef(classifier.get_name(), bases=bases,
+                            keywords=[],
+                            body=[ast.Pass()],
+                            decorator_list=[dataclass_decorator])
+
+    for feature in classifier.get_features():
+        _generate_from_feature(feature, classdef)
+
+    return classdef
+
 
 def ast_generation(click, language: Language, output):
     import_abc = ast.ImportFrom(
@@ -126,98 +226,12 @@ def ast_generation(click, language: Language, output):
 
     for classifier in sorted_classifier:
         if isinstance(classifier, Concept):
-            bases = []
-            if classifier.get_extended_concept().id == StarLasuBaseLanguage.get_astnode(LionWebVersion.V2023_1).id:
-                bases.append('Node')
-            else:
-                bases.append(classifier.get_extended_concept().get_name())
-            for i in classifier.get_implemented():
-                if i.get_id() == 'com-strumenta-StarLasu-Expression-id':
-                    bases.append('StarLasuExpression')
-                elif i.get_id() == 'com-strumenta-StarLasu-Statement-id':
-                    bases.append('StarLasuStatement')
-                elif i.get_id() == 'com-strumenta-StarLasu-PlaceholderElement-id':
-                    bases.append('StarLasuPlaceholderElement')
-                elif i.get_id() == 'com-strumenta-StarLasu-Parameter-id':
-                    bases.append('StarLasuParameter')
-                elif i.get_id() == 'com-strumenta-StarLasu-Documentation-id':
-                    bases.append('StarLasuDocumentation')
-                elif i.get_id() == 'com-strumenta-StarLasu-TypeAnnotation-id':
-                    bases.append('StarLasuTypeAnnotation')
-                elif i.get_id() == 'com-strumenta-StarLasu-BehaviorDeclaration-id':
-                    bases.append('StarLasuBehaviorDeclaration')
-                elif i.get_id() == 'com-strumenta-StarLasu-EntityDeclaration-id':
-                    bases.append('StarLasuEntityDeclaration')
-                elif i.get_id() == 'LionCore-builtins-INamed':
-                    bases.append('StarLasuNamed')
-                else:
-                    bases.append(i.get_name())
-            if classifier.is_abstract():
-                bases.append('ABC')
-            dataclass_decorator = ast.Name(id="dataclass", ctx=ast.Load())
-            classdef = ast.ClassDef(classifier.get_name(), bases=bases,
-                                    keywords=[],
-                                    body=[ast.Pass()],
-                                    decorator_list=[dataclass_decorator])
-
-            for feature in classifier.get_features():
-                if isinstance(feature, Containment):
-                    field_name = calculate_field_name(feature)
-                    type = feature.get_type().get_name()
-                    if feature.is_multiple():
-                        type = f"List[{type}]"
-                    elif feature.is_optional():
-                        type = f"Optional[{type}]"
-                    field = ast.AnnAssign(
-                        target=ast.Name(id=field_name, ctx=ast.Store()),
-                        annotation=ast.Constant(value=type),
-                        value=None,
-                        simple=1,
-                    )
-                    if len(classdef.body) == 1 and isinstance(classdef.body[0], ast.Pass):
-                        classdef.body = []
-                    classdef.body.append(field)
-                elif isinstance(feature, Reference):
-                    field_name = feature.get_name()
-                    if field_name in keyword.kwlist:
-                        field_name = f"{field_name}_"
-                    type = f"ReferenceByName[{feature.get_type().get_name()}]"
-                    if feature.is_optional():
-                        type = f"Optional[{type}]"
-                    field = ast.AnnAssign(
-                        target=ast.Name(id=field_name, ctx=ast.Store()),
-                        annotation=ast.Constant(value=type),
-                        value=None,
-                        simple=1,
-                    )
-                    if len(classdef.body) == 1 and isinstance(classdef.body[0], ast.Pass):
-                        classdef.body = []
-                    classdef.body.append(field)
-                elif isinstance(feature, Property):
-                    field_name = feature.get_name()
-                    if field_name in keyword.kwlist:
-                        field_name = f"{field_name}_"
-                    type = feature.get_type().get_name()
-                    if feature.is_optional():
-                        type = f"Optional[{type}]"
-                    field = ast.AnnAssign(
-                        target=ast.Name(id=field_name, ctx=ast.Store()),
-                        annotation=ast.Constant(value=type),
-                        value=None,
-                        simple=1,
-                    )
-                    if len(classdef.body) == 1 and isinstance(classdef.body[0], ast.Pass):
-                        classdef.body = []
-                    classdef.body.append(field)
-                else:
-                    raise ValueError()
-
-            module.body.append(classdef)
+            module.body.append(_generate_from_concept(classifier))
         elif isinstance(classifier, Interface):
             bases = []
             if len(classifier.get_extended_interfaces()) == 0:
                 bases.append("Node")
-                bases.append("ABC")
+                # bases.append("ABC")
 
             classdef = ast.ClassDef(classifier.get_name(), bases=bases,
                                     keywords=[],
