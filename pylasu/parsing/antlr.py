@@ -1,6 +1,6 @@
 import time
 from abc import abstractmethod
-from typing import Optional, List
+from typing import Optional, List, Union
 
 from antlr4 import CommonTokenStream, InputStream, Lexer, Parser, ParserATNSimulator, ParserRuleContext, \
     PredictionContextCache, Recognizer, Token, TokenStream
@@ -22,8 +22,8 @@ class PylasuANTLRParser:
     def __init__(self):
         self.prediction_context_cache = PredictionContextCache()
 
-    def parse(self, input_stream: InputStream, consider_range: bool = True, measure_lexing_time: bool = False,
-              source: Optional[Source] = None):
+    def parse(self, input_stream: Union[InputStream, str], consider_range: bool = True,
+              measure_lexing_time: bool = False, source: Optional[Source] = None):
         """Parses source code, returning a result that includes an AST and a collection of parse issues
         (errors, warnings).
         The parsing is done in accordance to the StarLasu methodology i.e. a first-stage parser builds a parse tree
@@ -34,6 +34,8 @@ class PylasuANTLRParser:
         @param measureLexingTime if true, the result will include a measurement of the time spent in lexing i.e.
         breaking the input stream into tokens."""
         start = time.time_ns()
+        if type(input_stream) is str:
+            input_stream = InputStream(input_stream)
         first_stage = self.parse_first_stage(input_stream, measure_lexing_time)
         issues = first_stage.issues
         ast = self.parse_tree_to_ast(first_stage.root, consider_range, issues, source)
@@ -120,12 +122,12 @@ class PylasuANTLRParser:
         return CommonTokenStream(lexer)
 
     @abstractmethod
-    def create_antlr_lexer(self, input_stream: InputStream):
+    def create_antlr_lexer(self, input_stream: InputStream) -> Lexer:
         """Creates the lexer."""
         pass
 
     @abstractmethod
-    def create_antlr_parser(self, token_stream: TokenStream):
+    def create_antlr_parser(self, token_stream: TokenStream) -> Parser:
         """Creates the first-stage parser."""
         pass
 
@@ -147,4 +149,5 @@ class ParserErrorListener(ErrorListener):
         end_point = start_point
         if isinstance(offending_symbol, Token):
             end_point = token_end_point(offending_symbol)
-        self.issues.append(Issue(IssueType.SYNTACTIC, msg or "unspecified", position=Position(start_point, end_point)))
+        msg = (msg or "unspecified").capitalize()
+        self.issues.append(Issue(IssueType.SYNTACTIC, msg, position=Position(start_point, end_point)))
