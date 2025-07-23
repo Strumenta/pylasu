@@ -18,7 +18,7 @@ flake8 . && flake8 tests
 pytest tests
 ```
 
-## Packaging and Distribution
+## Packaging and Distribution (Releasing a New Version of Pylasu)
 
 Update version in `pylasu/__init__.py`, commit, push and check that CI completes normally. 
 
