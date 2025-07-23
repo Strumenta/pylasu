@@ -1,5 +1,5 @@
 import functools
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, Field, fields
 from inspect import signature
 from typing import Any, Dict, Callable, TypeVar, Generic, Optional, List, Set, Iterable, Type, Union
 
@@ -29,6 +29,14 @@ class PropertyRef:
         return setattr(node, self.name, value)
 
 
+def field_of(cl: type, name: str) -> Field:
+    class_fields = fields(cl)
+    for fld in class_fields:
+        if fld.name == name:
+            return fld
+    raise Exception(f"Field {name} not found in {cl}")
+
+
 @dataclass
 class NodeFactory(Generic[Source, Output]):
     constructor: node_factory_constructor_type
@@ -37,8 +45,8 @@ class NodeFactory(Generic[Source, Output]):
 
     def with_child(
             self,
-            setter: Union[Callable[[Target, Optional[Child]], None], PropertyRef],
-            getter: Union[Callable[[Source], Optional[Any]], PropertyRef],
+            setter: Union[Callable[[Target, Optional[Child]], None], PropertyRef, Field],
+            getter: Union[Callable[[Source], Optional[Any]], PropertyRef, Field],
             name: Optional[str] = None,
             target_type: Optional[type] = None
     ) -> "NodeFactory[Source, Output]":
@@ -50,8 +58,12 @@ class NodeFactory(Generic[Source, Output]):
             prefix = ""
         if isinstance(getter, PropertyRef):
             getter = getter.get
+        elif isinstance(getter, Field):
+            getter = PropertyRef(getter.name).get
         if isinstance(setter, PropertyRef):
             setter = setter.set
+        elif isinstance(setter, Field):
+            setter = PropertyRef(setter.name).set
         self.children[prefix + name] = ChildNodeFactory(prefix + name, getter, setter)
         return self
 

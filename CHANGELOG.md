@@ -2,10 +2,11 @@
 All notable changes to this project from version 0.4.0 upwards are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [0.9.0] – Not yet released
+## [0.9.0] – 2025-07-23
 
 ### Added
 - `PylasuANTLRParser` class modeled after the Kolasu equivalent
+- _field_of_ function to make AST transformers slightly more type-safe
 
 ## [0.8.1] – 2025-02-21
 
