@@ -36,7 +36,7 @@ class PylasuANTLRParser:
         start = time.time_ns()
         if type(input_stream) is str:
             input_stream = InputStream(input_stream)
-        first_stage = self.parse_first_stage(input_stream, measure_lexing_time)
+        first_stage = self.parse_first_stage(input_stream, measure_lexing_time, source)
         issues = first_stage.issues
         ast = self.parse_tree_to_ast(first_stage.root, consider_range, issues, source)
         self.assign_parents(ast)
@@ -63,7 +63,7 @@ class PylasuANTLRParser:
         issues = []
         lexing_time: Optional[int] = None
         total_time: int = time.time_ns()
-        parser = self.create_parser(input_stream, issues)
+        parser = self.create_parser(input_stream, issues, source)
         if measure_lexing_time:
             token_stream = parser.getInputStream()
             if isinstance(token_stream, CommonTokenStream):
@@ -77,16 +77,16 @@ class PylasuANTLRParser:
         total_time = (time.time_ns() - total_time) // 1_000_000
         return FirstStageParsingResult(issues, root, None, total_time, lexing_time, source)
 
-    def create_parser(self, input_stream: InputStream, issues: List[Issue]) -> Parser:
+    def create_parser(self, input_stream: InputStream, issues: List[Issue], source: Optional[Source]) -> Parser:
         """Creates the first-stage parser."""
         lexer = self.create_antlr_lexer(input_stream)
-        self.attach_listeners(lexer, issues)
+        self.attach_listeners(lexer, issues, source)
         token_stream = self.create_token_stream(lexer)
         parser = self.create_antlr_parser(token_stream)
         # Assign interpreter to avoid caching DFA states indefinitely across executions
         parser._interp = \
             ParserATNSimulator(parser, parser.atn, parser._interp.decisionToDFA, self.prediction_context_cache)
-        self.attach_listeners(parser, issues)
+        self.attach_listeners(parser, issues, source)
         return parser
 
     def invoke_root_rule(self, parser: Parser):
@@ -135,14 +135,15 @@ class PylasuANTLRParser:
     def parse_tree_to_ast(self, root, consider_range: bool, issues: List[Issue], source: Source) -> Optional[Node]:
         pass
 
-    def attach_listeners(self, recognizer: Recognizer, issues: List[Issue]):
+    def attach_listeners(self, recognizer: Recognizer, issues: List[Issue], source: Source):
         recognizer.removeErrorListeners()
-        recognizer.addErrorListener(ParserErrorListener(issues))
+        recognizer.addErrorListener(ParserErrorListener(issues, source))
 
 
 class ParserErrorListener(ErrorListener):
-    def __init__(self, issues: List[Issue]):
+    def __init__(self, issues: List[Issue], source: Source):
         self.issues = issues
+        self.source = source
 
     def syntaxError(self, recognizer, offending_symbol, line, column, msg, e):
         start_point = Point(line, column)
@@ -150,4 +151,4 @@ class ParserErrorListener(ErrorListener):
         if isinstance(offending_symbol, Token):
             end_point = token_end_point(offending_symbol)
         msg = (msg or "unspecified").capitalize()
-        self.issues.append(Issue(IssueType.SYNTACTIC, msg, position=Position(start_point, end_point)))
+        self.issues.append(Issue(IssueType.SYNTACTIC, msg, position=Position(start_point, end_point, self.source)))

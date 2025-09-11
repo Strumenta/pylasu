@@ -99,7 +99,8 @@ class Position:
 
     def __repr__(self):
         return f"Position(start={self.start}, end={self.end}"\
-               + (f", source={self.source}" if self.source is not None else "")
+               + (f", source={self.source}" if self.source is not None else "")\
+               + ")"
 
     def __str__(self):
         str_rep = (f"{self.source}:" if self.source is not None else "") + str(self.start)
