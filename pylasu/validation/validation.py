@@ -31,6 +31,14 @@ class Issue:
         return msg
 
     @staticmethod
+    def lexical(message: str, severity: IssueSeverity = IssueSeverity.ERROR, position: Position = None):
+        return Issue(IssueType.LEXICAL, message, severity, position)
+
+    @staticmethod
+    def syntactic(message: str, severity: IssueSeverity = IssueSeverity.ERROR, position: Position = None):
+        return Issue(IssueType.SYNTACTIC, message, severity, position)
+
+    @staticmethod
     def semantic(message: str, severity: IssueSeverity = IssueSeverity.ERROR, position: Position = None):
         return Issue(IssueType.SEMANTIC, message, severity, position)
 
