@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 - `Position`'s printed representation
+- Empty issues list in `ASTTransformer`
 
 ## [0.9.0] – 2025-07-23
 

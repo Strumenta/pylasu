@@ -94,7 +94,7 @@ class ASTTransformer:
     known_classes: Dict[str, Set[type]]
 
     def __init__(self, issues: List[Issue] = None, allow_generic_node: bool = True):
-        self.issues = issues or []
+        self.issues = issues if issues is not None else []
         self.allow_generic_node = allow_generic_node
         self.factories = dict()
         self.known_classes = dict()
