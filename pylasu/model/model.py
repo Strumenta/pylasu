@@ -158,7 +158,7 @@ def compute_feature_from_annotation(cl, name, decl_type):
         elif type(decl_type) is str:
             decl_type = try_to_resolve_string_type(decl_type, name, cl)
         if not isinstance(decl_type, type):
-            raise Exception(f"Unsupported feature {name} of type {decl_type}")
+            raise Exception(f"Unsupported feature {name} of type {decl_type} in {cl}")
     feature.type = decl_type
     feature.is_containment = provides_nodes(decl_type) and not feature.is_reference
     return feature
@@ -169,7 +169,7 @@ def try_to_resolve_string_type(decl_type, name, cl):
         ns = getattr(sys.modules.get(cl.__module__, None), '__dict__', globals())
         decl_type = ns[decl_type]
     except KeyError:
-        raise Exception(f"Unsupported feature {name} of unknown type {decl_type}")
+        raise Exception(f"Unsupported feature {name} of unknown type {decl_type} in {cl}")
     return decl_type
 
 
@@ -195,6 +195,7 @@ def try_to_resolve_type(decl_type, feature):
                 feature.multiplicity = Multiplicity.OPTIONAL
         else:
             raise Exception(f"Unsupported feature {feature.name} of union type {decl_type}")
+        decl_type = try_to_resolve_type(decl_type, feature)
     return decl_type
 
 

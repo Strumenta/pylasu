@@ -20,6 +20,7 @@ class SomeNode(Node, Named):
     optional: Optional[Node] = None
     multiple_opt: List[Optional[Node]] = dataclasses.field(default_factory=list)
     internal: Node = internal_field(default=None)
+    optional_ref: Optional[ReferenceByName["SomeNode"]] = None
 
     def __post_init__(self):
         self.bar = 5
@@ -208,7 +209,7 @@ class ModelTest(unittest.TestCase):
             pass
 
         pds = [pd for pd in sorted(SomeNode.node_properties, key=lambda x: x.name)]
-        self.assertEqual(8, len(pds), f"{pds} should be 7")
+        self.assertEqual(9, len(pds), f"{pds} should be 9")
         self.assertEqual("bar", pds[0].name)
         self.assertFalse(pds[0].is_containment)
         self.assertEqual("containment", pds[1].name)
@@ -226,8 +227,11 @@ class ModelTest(unittest.TestCase):
         self.assertEqual("optional", pds[6].name)
         self.assertTrue(pds[6].is_containment)
         self.assertEqual(Multiplicity.OPTIONAL, pds[6].multiplicity)
-        self.assertEqual("reference", pds[7].name)
+        self.assertEqual("optional_ref", pds[7].name)
         self.assertTrue(pds[7].is_reference)
+        self.assertEqual(Multiplicity.OPTIONAL, pds[7].multiplicity)
+        self.assertEqual("reference", pds[8].name)
+        self.assertTrue(pds[8].is_reference)
 
         self.assertRaises(Exception, lambda: [x for x in InvalidNode.node_properties])
 
@@ -237,7 +241,7 @@ class ModelTest(unittest.TestCase):
             pass
 
         pds = [pd for pd in sorted(ExtendedNode.node_properties, key=lambda x: x.name)]
-        self.assertEqual(15, len(pds), f"{pds}")
+        self.assertEqual(16, len(pds), f"{pds}")
         self.assertEqual("bar", pds[0].name)
         self.assertFalse(pds[0].is_containment)
         self.assertEqual("cont_fwd", pds[1].name)
